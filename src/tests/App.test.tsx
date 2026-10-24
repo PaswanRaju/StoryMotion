@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { HomePage } from '../components/home/HomePage';
 import { App } from '../app/App';
+import { SessionProvider } from '../app/SessionContext';
 
 describe('App shell + routing smoke test', () => {
   it('renders the Home screen content at the root route', () => {
@@ -17,7 +18,11 @@ describe('App shell + routing smoke test', () => {
       { initialEntries: ['/'] },
     );
 
-    render(<RouterProvider router={router} />);
+    render(
+      <SessionProvider>
+        <RouterProvider router={router} />
+      </SessionProvider>,
+    );
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'StoryMotion' }),

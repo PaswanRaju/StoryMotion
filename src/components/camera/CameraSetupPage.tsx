@@ -1,11 +1,22 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import { CameraSetup } from './CameraSetup';
+import { getStoryById } from '../../data/stories/registry';
+import { StoryNotFound } from '../library/StoryNotFound';
+import { routes } from '../../app/router';
+
 export function CameraSetupPage() {
+  const { storyId } = useParams<{ storyId: string }>();
+  const navigate = useNavigate();
+  const story = storyId ? getStoryById(storyId) : undefined;
+
+  if (!story) {
+    return <StoryNotFound />;
+  }
+
   return (
-    <section>
-      <h2>Camera Setup</h2>
-      <p>
-        Placeholder screen — camera permission flow, framing guide, and
-        "Play without camera" fallback arrive in Phase 02/05.
-      </p>
-    </section>
+    <CameraSetup
+      onBack={() => navigate(routes.characterSelect(story.id))}
+      onContinue={() => navigate(routes.player(story.id))}
+    />
   );
 }
