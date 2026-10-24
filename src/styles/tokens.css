@@ -1,0 +1,77 @@
+/* StoryMotion design tokens — Section 6 of CLAUDE.md. */
+:root {
+  /* Palette */
+  --color-cream: #f7f1df;
+  --color-sage: #a9d7a0;
+  --color-honey: #f5bf72;
+  --color-sky: #93c8e8;
+  --color-cocoa: #624a3a;
+
+  /* Darker accessible variants for text/interactive states (contrast-checked) */
+  --color-cocoa-dark: #4a3728;
+  --color-sage-dark: #5f8f56;
+  --color-honey-dark: #c98f2e;
+  --color-sky-dark: #3f84ab;
+
+  --color-bg: var(--color-cream);
+  --color-text: var(--color-cocoa-dark);
+  --color-text-muted: #7a6753;
+  --color-surface: #ffffff;
+  --color-border: #e3d8bd;
+  --color-focus-ring: var(--color-sky-dark);
+  --color-danger: #c75c4a;
+  --color-success: var(--color-sage-dark);
+
+  /* Typography */
+  --font-heading: 'Fredoka', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --fs-xs: 0.875rem;
+  --fs-sm: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.5rem;
+  --fs-xl: 2rem;
+  --fs-2xl: 2.75rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* Shape */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-pill: 999px;
+
+  /* Controls */
+  --control-min: 44px;
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Breakpoints (reference values; used in media queries directly) */
+  --breakpoint-tablet: 768px;
+  --breakpoint-laptop: 1280px;
+
+  /* Layered z-index scale */
+  --z-scene: 0;
+  --z-ui: 10;
+  --z-modal: 100;
+  --z-toast: 200;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}

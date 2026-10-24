@@ -1,0 +1,168 @@
+@import './tokens.css';
+
+/* Shared component classes. Keep these generic; screen-specific layout
+   belongs in the screen's own component, not here. */
+
+.app-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-shell__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-5) var(--space-8);
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  gap: var(--space-4);
+}
+
+.app-header__brand {
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-cocoa-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-min);
+  min-width: var(--control-min);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: none;
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.btn--primary {
+  background: var(--color-honey);
+  color: var(--color-cocoa-dark);
+  box-shadow: 0 2px 0 var(--color-honey-dark);
+}
+
+.btn--secondary {
+  background: var(--color-sky);
+  color: var(--color-cocoa-dark);
+  box-shadow: 0 2px 0 var(--color-sky-dark);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-cocoa-dark);
+  border: 2px solid var(--color-border);
+}
+
+.btn--small {
+  font-size: var(--fs-sm);
+  padding: var(--space-2) var(--space-4);
+  min-height: 36px;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: var(--space-5);
+  box-shadow: 0 4px 16px rgba(98, 74, 58, 0.08);
+}
+
+.card--selectable {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.card--selectable:hover {
+  box-shadow: 0 6px 20px rgba(98, 74, 58, 0.14);
+}
+
+.card--selected {
+  border-color: var(--color-sky-dark);
+  box-shadow: 0 0 0 3px var(--color-sky);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: var(--color-sage-dark);
+  border-radius: var(--radius-pill);
+  transition: width var(--duration-base) var(--ease-out);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 55, 40, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  z-index: var(--z-modal);
+}
+
+.modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 480px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .app-shell__main {
+    padding: var(--space-4);
+  }
+}
