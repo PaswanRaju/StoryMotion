@@ -725,3 +725,9 @@
 .automatic-player .theater-bottom .camera-preview[hidden] {
   display: none;
 }
+
+/* Last scene: the picture's own "The End" card takes the stage. */
+.automatic-player .magic-invitation.is-quiet {
+  opacity: 0;
+  pointer-events: none;
+}

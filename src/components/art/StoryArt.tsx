@@ -1,5 +1,6 @@
 import { Hare, Tortoise } from '../../rendering/forest/characters';
 import { Jack } from '../../rendering/beanstalk/Jack';
+import { CastDefs, Giant, Hen, Pig as StoryPig, Wolf } from '../../rendering/storybook/cast';
 import '../../rendering/beanstalk/beanstalk.css';
 import type { StoryId } from '../../engine/types';
 import '../../rendering/forest/forest.css';
@@ -307,20 +308,36 @@ export function StoryCover({ storyId }: { storyId: StoryId }) {
           </>
         )}
         {storyId === 'beanstalk' && (
-          <div className="cast-a jack is-climb">
-            <Jack />
-          </div>
+          <>
+            <div className="cast-giant">
+              <svg viewBox="-300 -980 600 600">
+                <Giant pose="laugh" />
+              </svg>
+            </div>
+            <div className="cast-a jack is-climb">
+              <Jack />
+            </div>
+            <div className="cast-hen">
+              <svg viewBox="-60 -130 140 140">
+                <CastDefs />
+                <Hen pose="idle" />
+              </svg>
+            </div>
+          </>
         )}
         {storyId === 'pigs' && (
           <>
-            <div className="cast-a">
-              <Pig id="pig-one" />
-            </div>
-            <div className="cast-b">
-              <Pig id="pig-two" />
-            </div>
-            <div className="cast-c">
-              <Pig id="pig-three" />
+            {(['one', 'two', 'three'] as const).map((id, i) => (
+              <div key={id} className={`cast-${'abc'[i]}`}>
+                <svg viewBox="-75 -255 150 265">
+                  <StoryPig id={id} pose="idle" idle={i * 700} />
+                </svg>
+              </div>
+            ))}
+            <div className="cast-wolf">
+              <svg viewBox="-180 -410 330 420">
+                <Wolf pose="sneak" />
+              </svg>
             </div>
           </>
         )}

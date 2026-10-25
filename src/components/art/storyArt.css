@@ -62,15 +62,29 @@
 }
 .story-cover--pigs .cast-a {
   left: 4%;
-  height: 36%;
+  height: 44%;
 }
 .story-cover--pigs .cast-b {
   left: 22%;
-  height: 40%;
+  height: 44%;
 }
 .story-cover--pigs .cast-c {
-  left: 42%;
-  height: 38%;
+  left: 40%;
+  height: 44%;
+}
+.story-cover--pigs .cast-wolf {
+  left: 66%;
+  height: 50%;
+}
+.story-cover--beanstalk .cast-giant {
+  right: 6%;
+  top: 2%;
+  bottom: auto;
+  height: 34%;
+}
+.story-cover--beanstalk .cast-hen {
+  left: 50%;
+  height: 15%;
 }
 .story-cover::after {
   /* soft light and depth at the bottom, where the text card begins */

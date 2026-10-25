@@ -138,11 +138,11 @@ describe('automatic story timeline', () => {
 
   it('gives a late deferred invitation its full window, still ending on time', () => {
     let state = run(
-      { ...initialAutomaticStory(), moment: 2, elapsed: 30000 },
+      { ...initialAutomaticStory(), moment: 2, elapsed: BOOST.startMs + 4000 },
       tick(100),
     );
     expect(state.interaction).toBe('open');
-    expect(state.elapsed).toBe(30100);
+    expect(state.elapsed).toBe(BOOST.startMs + 4100);
     state = advance(state, BOOST.windowMs - 400);
     expect(state.interaction).toBe('open');
     state = advance(state, 600);

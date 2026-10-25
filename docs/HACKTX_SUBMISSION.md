@@ -128,8 +128,9 @@ playful movement.
 
 ## Future improvements
 
-- Author the *Jack and the Beanstalk* and *Three Little Pigs* scenes with the same
-  engine (they currently use simpler placeholder animations).
+- *Jack and the Beanstalk* (14 scenes) and *The Three Little Pigs* (12 scenes, one
+  continuous story, wheat → stone → brick, with an on-screen Wolf) are now complete
+  scene-based stories; next would be curated illustrated art for them.
 - Calibrate thresholds from real playtests with children, with consent and without
   recording.
 - Family mode prompts for a parent and child to choose together.

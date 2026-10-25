@@ -17,14 +17,14 @@ const PITCH: Record<StorySummary['id'], { tagline: string; interaction: string; 
     chips: ['⭐ Featured', '3 magic moments', 'Camera or buttons'],
   },
   beanstalk: {
-    tagline: "Climb into the clouds, discover a giant's castle, and help Jack using your movements.",
-    interaction: '✋ Raise a hand to grow the beanstalk, lean to dodge, open your arms to glide home',
-    chips: ['✨ New adventure', '3 magic moments', 'Camera or buttons'],
+    tagline: 'Trade a cow for magic beans, climb to the Giant\'s castle, and escape with the golden hen!',
+    interaction: '✋ Raise a hand to grow the beanstalk, lean to dodge, spread your arms to protect Jack',
+    chips: ['✨ Full story', '3 magic moments', 'Camera or buttons'],
   },
   pigs: {
-    tagline: 'Build the strongest little house and keep it safe from a windy wolf.',
-    interaction: '🧱 Use your body to help the pigs build',
-    chips: ['Build together', 'Camera or buttons'],
+    tagline: 'Wheat, stone, then brick: follow all three pigs as they outsmart the huffing, puffing wolf.',
+    interaction: '✋ Raise a hand to lift the last brick, 🙌 spread your arms to keep the house strong',
+    chips: ['🐷 One story, three pigs', '2 magic moments', 'Camera or buttons'],
   },
 };
 
@@ -65,7 +65,7 @@ export function StoryCard({ story, onSelect, featured = false }: StoryCardProps)
           ))}
         </ul>
         <p className="story-card__cast">
-          Starring: {story.characters.map((c) => c.name).join(' & ')}
+          Starring: {story.starring}
         </p>
         <button
           type="button"

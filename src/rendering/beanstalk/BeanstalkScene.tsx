@@ -1,7 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { BodyGesture } from '../../vision/bodyGestures';
-import { BEANSTALK_MOMENTS } from '../../engine/automaticStory';
 import type { MomentId } from '../../engine/automaticStory';
+
+/**
+ * The moments this tall-world renderer knows, by index of `outcomes`/`openMoment`.
+ * The story now uses it only for the grow → climb → clouds scenes (see
+ * BEANSTALK_LEGACY_SCENES), so callers pass just the first two.
+ */
+const BEANSTALK_MOMENTS = [{ id: 'grow' }, { id: 'dodge' }, { id: 'glide' }] as const;
 import type { Outcome, Reaction } from '../forest/characterState';
 import { ParticleField } from '../forest/particles';
 import { activateShield, boostBurst, celebrationBurst, GOLD, spawnSparkles } from '../forest/effects';
@@ -44,6 +50,8 @@ type Props = {
   openMoment?: number | null;
   onFinishLine?: () => void;
   characterId?: string;
+  /** 0 → 1 darkness over the picture, for scene fades in the story around it. */
+  overlay?: number;
 };
 const POP_MS = 1800;
 const LAYERS = [
@@ -92,6 +100,7 @@ export function BeanstalkScene({
   openMoment = null,
   onFinishLine,
   characterId,
+  overlay = 0,
 }: Props) {
   const stage = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -458,6 +467,7 @@ export function BeanstalkScene({
           <span />
         </div>
         {elapsed < 1400 && <div className="forest-open-fade" />}
+        {overlay > 0.001 && <div className="bs-overlay" style={{ opacity: overlay }} />}
         {dips.map(([a]) => (
           <div key={a} className="forest-dip" />
         ))}

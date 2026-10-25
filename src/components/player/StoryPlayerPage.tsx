@@ -3,10 +3,8 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStoryById } from '../../data/stories/registry';
 import type { StorySummary } from '../../data/stories/registry';
-import {
-  animatedBeats,
-  storyBeatIndex,
-} from '../../data/stories/animatedBeats';
+import { sceneAt, STORY_SCENES } from '../../data/stories/scenes';
+import { buttonFor, PROMPTS, reaction } from '../../data/stories/momentCopy';
 import { StoryNotFound } from '../library/StoryNotFound';
 import { useSession } from '../../app/SessionContext';
 import { routes } from '../../app/router';
@@ -21,12 +19,10 @@ import {
   initialAutomaticStory,
   SCRIPTS,
 } from '../../engine/automaticStory';
-import type { MomentId } from '../../engine/automaticStory';
 import type { BodyGesture } from '../../vision/bodyGestures';
 import { playSfx, unlockSfx } from '../../audio/sfx';
 import type { Sfx } from '../../audio/sfx';
 import { useNarration } from '../../hooks/useNarration';
-import { FINISH_CROSSED_MS } from '../../rendering/forest/timeline';
 import { narrator } from '../../audio/narrator';
 import './automaticStory.css';
 
@@ -52,12 +48,14 @@ function AutomaticStoryPlayer({ story }: { story: StorySummary }) {
   const character =
     story.characters.find((candidate) => candidate.id === characterId) ??
     story.characters[0];
-  const beat = storyBeatIndex(state.elapsed, story.id);
-  const text = animatedBeats[story.id][beat];
-  // A new id per beat and per restart: each line is spoken once, never per render.
+  // One active scene drives the caption, the spoken line, the chapter label and the picture.
+  const active = sceneAt(story.id, state.elapsed);
+  const text = active.scene.narration;
+  const lastScene = active.index === SCENE_COUNT[story.id] - 1;
+  // A new id per scene and per restart: each line is spoken once, never per render.
   const [run, setRun] = useState(0);
   const replayNarration = useNarration(
-    `${story.id}:${run}:${beat}`,
+    `${story.id}:${run}:${active.scene.id}`,
     text,
     audioEnabled,
     state.paused,
@@ -101,8 +99,8 @@ function AutomaticStoryPlayer({ story }: { story: StorySummary }) {
   const freshOutcome =
     lastOutcome && state.elapsed < resolved.at + CAPTION_MS ? lastOutcome : null;
   // The narrator reacts once to each resolved moment (never restarting a story line).
+  // Moments are scheduled after their scene's narration, so a reaction never cuts it off.
   useEffect(() => {
-    if (story.id === 'pigs') return;
     state.responses.forEach((gesture, index) => {
       const outcome = gesture ?? (state.auto[index] ? 'auto' : null);
       if (!outcome) return;
@@ -151,7 +149,7 @@ function AutomaticStoryPlayer({ story }: { story: StorySummary }) {
       <div inert={state.paused || undefined}>
         <PlayerToolbar
           title={story.title}
-          chapterLabel={`Watching with ${character.name}`}
+          chapterLabel={active.scene.title}
           muted={!audioEnabled}
           onToggleMute={toggleAudio}
           onPause={() => dispatch({ type: 'PAUSE', paused: true })}
@@ -190,7 +188,7 @@ function AutomaticStoryPlayer({ story }: { story: StorySummary }) {
               />
               <div
                 key={open ? `ask-${state.moment}` : `after-${state.moment}`}
-                className={`magic-invitation ${open ? 'is-open' : ''}${!open && freshOutcome && freshOutcome !== 'auto' ? ' is-success' : ''}`}
+                className={`magic-invitation ${open ? 'is-open' : ''}${!open && freshOutcome && freshOutcome !== 'auto' ? ' is-success' : ''}${lastScene && !open ? ' is-quiet' : ''}`}
                 aria-live="polite"
               >
                 {open && momentId ? (
@@ -237,10 +235,9 @@ function AutomaticStoryPlayer({ story }: { story: StorySummary }) {
                       ))}
                     </div>
                   </>
-                ) : FINALE[story.id] && state.elapsed >= FINALE[story.id]!.atMs ? (
-                  <p>
-                    <strong>{FINALE[story.id]!.title}</strong> {FINALE[story.id]!.text}
-                  </p>
+                ) : lastScene ? (
+                  // The picture shows its own "The End" card; keep the sky clear for it.
+                  <p className="invite-quiet">{story.moral}</p>
                 ) : freshOutcome && lastMomentId ? (
                   <p>
                     <strong>
@@ -309,129 +306,8 @@ const GESTURE_SFX: Record<BodyGesture, Sfx> = {
   ARMS_WIDE: 'shield',
   CROUCH: 'duck',
 };
-const ACTIONS: Record<BodyGesture, { label: string; text: string; hint: string }> = {
-  ARMS_WIDE: { label: 'Use Magic', text: '🫧 Use Magic', hint: 'or spread your arms' },
-  LEAN_LEFT: { label: 'Choose Left', text: '← 🌲 Choose Left', hint: 'or lean left' },
-  LEAN_RIGHT: { label: 'Choose Right', text: 'Choose Right ☀️ →', hint: 'or lean right' },
-  HAND_RAISE: { label: 'Give Boost', text: '✨ Give Boost', hint: 'or raise a hand' },
-  CROUCH: { label: 'Duck', text: '⬇ Duck', hint: 'or bend your knees' },
+const SCENE_COUNT = {
+  hare: STORY_SCENES.hare.length,
+  beanstalk: STORY_SCENES.beanstalk.length,
+  pigs: STORY_SCENES.pigs.length,
 };
-const PROMPTS: Record<MomentId, { title: (name: string) => string; body: string }> = {
-  shield: {
-    title: (name) => `${name} needs your help!`,
-    body: 'Spread your arms wide to make a magic shield!',
-  },
-  path: {
-    title: (name) => `Which way should ${name} go?`,
-    body: 'Lean left for the shady woods, or right for the sunny meadow!',
-  },
-  boost: {
-    title: (name) => `Give ${name} one last boost!`,
-    body: 'Raise a hand up high!',
-  },
-  grow: {
-    title: (name) => `${name} needs some magic!`,
-    body: 'Raise your hand to wake up the magic beans!',
-  },
-  dodge: {
-    title: (name) => `Help ${name} choose a safe side!`,
-    body: 'A tumbling cloud is coming down. Lean left or right!',
-  },
-  glide: {
-    title: () => 'The giant is waking up!',
-    body: 'Spread your arms wide to open a magic leaf glider!',
-  },
-};
-/** Story-specific button wording; other moments use the generic ACTIONS labels. */
-const MOMENT_BUTTONS: Partial<
-  Record<MomentId, Partial<Record<BodyGesture, { label: string; text: string; hint: string }>>>
-> = {
-  grow: {
-    HAND_RAISE: { label: 'Grow the Beanstalk', text: '🌱 Grow the Beanstalk', hint: 'or raise a hand' },
-  },
-  dodge: {
-    LEAN_LEFT: { label: 'Move Left', text: '← Move Left', hint: 'or lean left' },
-    LEAN_RIGHT: { label: 'Move Right', text: 'Move Right →', hint: 'or lean right' },
-  },
-  glide: {
-    ARMS_WIDE: { label: 'Open the Glider', text: '🍃 Open the Glider', hint: 'or spread your arms' },
-  },
-};
-const buttonFor = (moment: MomentId, gesture: BodyGesture) =>
-  MOMENT_BUTTONS[moment]?.[gesture] ?? ACTIONS[gesture];
-/** Caption once the story has reached its happy ending. */
-const FINALE: Partial<Record<StorySummary['id'], { atMs: number; title: string; text: string }>> = {
-  hare: { atMs: FINISH_CROSSED_MS, title: '🏁 What a race!', text: 'Slow and steady wins the day.' },
-  beanstalk: { atMs: 46000, title: '🏡 Home sweet home!', text: 'A little courage can take you far.' },
-};
-/** What happened, for the caption under the scene and the narrator's one-line reaction. */
-function reaction(
-  moment: MomentId,
-  outcome: BodyGesture | 'auto',
-  name: string,
-): { caption: string; spoken: string } {
-  if (moment === 'shield')
-    return outcome === 'auto'
-      ? {
-          caption: `${name} found another way — tucked in safe while the leaves blew past!`,
-          spoken: `${name} tucked in safe, and the leaves whooshed right past.`,
-        }
-      : {
-          caption: `Magic shield! The leaves bounce right off the bubble around ${name}.`,
-          spoken: 'Wow! A magic shield! The leaves bounce right off!',
-        };
-  if (moment === 'grow')
-    return outcome === 'auto'
-      ? {
-          caption: 'The magic beans woke up all by themselves!',
-          spoken: 'The beans woke up all by themselves!',
-        }
-      : {
-          caption: `Your magic made the beanstalk grow! Look at it go, ${name}!`,
-          spoken: 'Whoosh! Your magic made the beanstalk grow!',
-        };
-  if (moment === 'dodge')
-    return outcome === 'auto'
-      ? {
-          caption: `${name} found a safe side all by himself!`,
-          spoken: `${name} found a safe side.`,
-        }
-      : {
-          caption: `Great move! ${name} swings ${outcome === 'LEAN_LEFT' ? 'left' : 'right'} and the cloud tumbles past.`,
-          spoken: 'Great move! The cloud tumbled right past!',
-        };
-  if (moment === 'glide')
-    return outcome === 'auto'
-      ? {
-          caption: `${name} slid all the way down the beanstalk!`,
-          spoken: `${name} slid down the beanstalk, quick and quiet.`,
-        }
-      : {
-          caption: `A magic leaf glider! ${name} floats gently home.`,
-          spoken: 'A magic leaf glider! Jack floats gently home.',
-        };
-  if (moment === 'path')
-    return outcome === 'LEAN_LEFT'
-      ? {
-          caption: `Left path chosen! ${name} takes the cool, shady woods.`,
-          spoken: 'The shady woods it is! Cool and green.',
-        }
-      : outcome === 'LEAN_RIGHT'
-        ? {
-            caption: `Right path chosen! ${name} takes the warm, sunny meadow.`,
-            spoken: 'The sunny meadow it is! Warm and bright.',
-          }
-        : {
-            caption: `${name} picked the sunny meadow. Off we go!`,
-            spoken: `${name} picked the sunny meadow.`,
-          };
-  return outcome === 'auto'
-    ? {
-        caption: `${name} keeps going, steady and strong!`,
-        spoken: `Steady and strong, ${name} keeps going!`,
-      }
-    : {
-        caption: `A sparkly boost! ${name} zooms toward the finish.`,
-        spoken: `Zoom! ${name} feels full of energy!`,
-      };
-}

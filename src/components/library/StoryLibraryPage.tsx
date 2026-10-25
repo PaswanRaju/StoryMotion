@@ -6,7 +6,15 @@ import { routes } from '../../app/router';
 
 export function StoryLibraryPage() {
   const navigate = useNavigate();
-  const { mode } = useSession();
+  const { mode, setCharacterId } = useSession();
+  // One-character stories are a single continuous story: straight to the player.
+  const choose = (storyId: string) => {
+    const story = storyRegistry.find((candidate) => candidate.id === storyId);
+    if (story && story.characters.length === 1) {
+      setCharacterId(story.characters[0].id);
+      void navigate(routes.player(storyId));
+    } else void navigate(routes.characterSelect(storyId));
+  };
 
   return (
     <section className="library">
@@ -26,7 +34,7 @@ export function StoryLibraryPage() {
       </header>
       <StoryGrid
         stories={storyRegistry}
-        onSelect={(storyId) => navigate(routes.characterSelect(storyId))}
+        onSelect={choose}
       />
     </section>
   );

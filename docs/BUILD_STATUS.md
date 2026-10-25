@@ -246,3 +246,53 @@ frames/s in headless Chrome.
 
 **MANUAL_REQUIRED:** physical webcam gestures on the demo MacBook, listening to the
 audio, and Safari/Firefox. No deployment exists.
+
+
+## Story completeness pass — 2026-10-25 (Claude Code, `feat/raju-gesture`, uncommitted)
+
+Teammate feedback: stories lacked introductions/conclusions, Jack was missing key plot
+events, the Pigs were three separate character experiences, and the Wolf was not on
+screen. Fixed by making every story an explicit, ordered scene list:
+
+- **Single plot source:** `src/data/stories/scenes.ts` — scene id, chapter title,
+  narration, visible cast, plot events and optional moments. The engine
+  (`automaticStory.ts` SCRIPTS), captions, narration line ids, chapter label and the
+  renderers all look up the same active scene. Moment prompts/reactions moved to
+  `src/data/stories/momentCopy.ts`.
+- **Jack and the Beanstalk (14 scenes):** Jack/Mother/Milky-White intro → mother sends
+  the cow to market for vegetables → trader trades magic beans for the cow (rope and
+  beans visibly change hands) → mother upset, tosses beans into the garden, night →
+  beanstalk grows (legacy tall-world renderer reused) → climb → clouds/castle → Giant
+  stomps in → golden hen lays a golden egg → Giant sleeps, Jack thinks of his hungry
+  mother and takes the hen → hen clucks, Giant wakes, notices, chases → escape down
+  the swaying beanstalk with the Giant's boots following → Mother brings the axe, the
+  Giant climbs back up, beanstalk falls → ending with sharing and a lesson about
+  choices. Optional: HAND_RAISE grow, LEAN dodge, ARMS_WIDE protect.
+- **The Three Little Pigs (12 scenes, one story, one "character" entry → no picker):**
+  Mama Pig goodbye → wheat house → visible animated Wolf → huff/puff, wheat house
+  collapses, pig 1 flees → stone house (no door, leafy roof: the believable weakness)
+  → Wolf blows through the doorway, roof flies off, pigs slip out the back → brick
+  house → reunion, door slams → climax, house stands → last trick: chimney, lid,
+  slide, splash into the rain barrel → Wolf runs off for good → celebration + moral.
+  Optional: HAND_RAISE last brick, ARMS_WIDE brace.
+- **Tortoise and the Hare:** kept its renderer; added an introduction and a separate
+  challenge scene by holding the forest picture at the start line for 13 s
+  (`forestTime()`); ending card now also says "The End — Adventure Complete!".
+- **Renderer:** `src/rendering/storybook/` — posable SVG rigs (Mother, Cow, Trader,
+  Giant/GiantLegs, Golden Hen, three Pigs + Mama, Wolf), sets (cottage, market road,
+  castle hall, descent, countryside, wheat/stone/brick houses with build/collapse
+  states), camera zoom/shake, scene fades, title/end cards, and per-scene sound cues.
+- **Sound:** 34 short synthesized Web Audio story cues in `src/audio/sfx.ts` (moo,
+  thump, cluck, chop, crash, inhale/blow, brick, splash…); no audio files or licenses.
+- **Menus:** story cards show the full cast (Giant, golden hen, Wolf, the story's own
+  pigs); completion screen shows "The End — Adventure Complete!" and the ending cast.
+
+**Validation actually run:** typecheck PASS, lint PASS (0 warnings), 153 tests / 20
+files PASS (new `storyCompleteness.test.tsx`: required plot events in order,
+intro/conclusion, narration fits scene length, invitations wait for narration, renderer
+coverage, renderer shows the narrated characters/states, camera-off autoplay of every
+scene in order with captions/picture in sync; narration spoken once per scene), build
+PASS. Headless Chrome (DevTools protocol) screenshots of every Jack and Pigs scene and
+the Hare intro at 1280×800; both new stories autoplayed to the completion page with
+no input. Real-webcam gestures: NOT VERIFIED (MANUAL_REQUIRED). Audio cues: NOT
+LISTENED TO by a human (MANUAL_REQUIRED). No commits, pushes or merges.

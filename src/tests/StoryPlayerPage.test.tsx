@@ -12,7 +12,7 @@ import { SessionProvider } from '../app/SessionContext';
 import type { BodyGestureEvent } from '../vision/bodyGestures';
 import type { MagicAction } from '../vision/magicGesture';
 import type { TrackingStatus } from '../vision/poseCamera';
-import { SCRIPTS } from '../engine/automaticStory';
+import { MOMENTS, SCRIPTS } from '../engine/automaticStory';
 
 vi.mock('../components/gesture/GestureCamera', () => ({
   GestureCamera: ({
@@ -68,10 +68,12 @@ afterEach(() => {
 });
 
 // Wall-clock milestones (story time holds while an invitation is open).
-const SHIELD_AT = 11000;
-const PATH_AFTER_SHIELD = 10600; // story 11 s → 21.5 s, plus one tick
-const BOOST_AFTER_PATH = 4600; // story 21.5 s → 26 s
-const NO_INPUT_MS = 42000 + 8000 + 7000 + 7000 + 1000;
+const [SHIELD, PATH, BOOST] = MOMENTS;
+const SHIELD_AT = SHIELD.startMs;
+const PATH_AFTER_SHIELD = PATH.startMs - SHIELD.startMs + 100; // plus one tick
+const BOOST_AFTER_PATH = BOOST.startMs - PATH.startMs + 100;
+const NO_INPUT_MS =
+  SCRIPTS.hare.durationMs + MOMENTS.reduce((sum, m) => sum + m.windowMs, 0) + 1000;
 const tortoise = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-testid="tortoise-actor"]')!;
 const caption = (text: RegExp) => screen.getByText(text, { selector: 'p' });
@@ -82,7 +84,7 @@ describe('integrated automatic story', () => {
     (story) => {
       const { container } = renderPlayer(story);
       expect(screen.getByRole('img')).toBeInTheDocument();
-      expect(container.querySelector('svg[role="img"]')).not.toBeNull();
+      expect(container.querySelector('svg[role="img"], [role="img"] svg')).not.toBeNull();
       expect(container.querySelector('img[src], video[src]')).toBeNull();
       expect(screen.queryByText('🎬')).not.toBeInTheDocument();
       const script = SCRIPTS[story as keyof typeof SCRIPTS];
@@ -179,8 +181,11 @@ describe('integrated automatic story', () => {
       advance(2000);
       expect(tortoise(container).dataset.state).toBe('energized');
       advance(4000);
-      expect(screen.getByText('🏁 What a race!')).toBeInTheDocument();
       expect(screen.queryByText(/A sparkly boost!/)).not.toBeInTheDocument();
+      advance(4000); // the last scene: the ending card and its moral
+      expect(container.querySelector('.forest-endcard')).toHaveTextContent(
+        'The End — Adventure Complete!',
+      );
       advance(20000);
       expect(screen.getByText('Story complete')).toBeInTheDocument();
     },
@@ -259,7 +264,7 @@ describe('integrated automatic story', () => {
     expect(caption(/Magic shield!/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Restart story' }));
     expect(screen.queryByText(/Magic shield!/)).not.toBeInTheDocument();
-    expect(screen.getByText(/On a sunny morning/)).toBeInTheDocument();
+    expect(screen.getByText(/Once upon a time, in a sunny forest/)).toBeInTheDocument();
   });
   it('shows "Almost there…" only while a gesture is forming during an invitation', () => {
     renderPlayer();

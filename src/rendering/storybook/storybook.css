@@ -1,0 +1,95 @@
+/* Scene-based storybook stories (Jack and the Beanstalk, The Three Little Pigs).
+   The stage is authored at 1920×1080 and scaled to the frame width. */
+.storybook-scene {
+  background: #120d1e;
+}
+.sb-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  transform-origin: 0 0;
+}
+.storybook-scene .sb-root {
+  display: block;
+  width: 1920px;
+  height: 1080px;
+}
+.storybook-scene .sb-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sb-blink 4.4s infinite;
+}
+.storybook-scene g:nth-child(odd) > .sb-blink {
+  animation-delay: 1.3s;
+}
+@keyframes sb-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+.storybook-scene .sb-glow {
+  animation: sb-glow 1.6s ease-in-out infinite alternate;
+}
+@keyframes sb-glow {
+  to {
+    opacity: 0.35;
+  }
+}
+.storybook-scene .sb-flicker {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sb-flicker 0.5s ease-in-out infinite alternate;
+}
+@keyframes sb-flicker {
+  to {
+    transform: scale(1.06, 0.94);
+    opacity: 0.85;
+  }
+}
+.storybook-scene .sb-twinkle {
+  animation: sb-twinkle 2.4s ease-in-out infinite alternate;
+}
+@keyframes sb-twinkle {
+  to {
+    opacity: 0.25;
+  }
+}
+.storybook-scene .sb-flag {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: sb-flag 0.9s ease-in-out infinite alternate;
+}
+@keyframes sb-flag {
+  to {
+    transform: scaleX(0.8) skewY(6deg);
+  }
+}
+/* "Sad" Jack: the worried mouth and brows without the scared shiver. */
+.storybook-scene .jack.is-sad .jk-mouth--smile {
+  opacity: 0;
+}
+.storybook-scene .jack.is-sad .jk-mouth--worry {
+  opacity: 1;
+}
+.storybook-scene .jack.is-sad .jk-head {
+  rotate: 6deg;
+}
+.sb-endcard {
+  top: 30%;
+}
+.sb-endcard em {
+  max-width: 1100px;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 34px;
+  font-weight: 700;
+  color: #ffe9a8;
+}

@@ -57,6 +57,8 @@ type Props = {
   openMoment?: number | null;
   onFinishLine?: () => void;
   characterId?: string;
+  /** Active story scene, for the light sweep between scenes. */
+  beat?: number;
 };
 type Live = {
   effects: Reaction[];
@@ -107,6 +109,7 @@ export function ForestRaceScene({
   openMoment = null,
   onFinishLine,
   characterId,
+  beat: beatProp,
 }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -183,7 +186,7 @@ export function ForestRaceScene({
     reactions: hareChosen ? [] : fx.list,
   });
   const hState = hareState(elapsed);
-  const beat = storyBeatIndex(elapsed);
+  const beat = beatProp ?? storyBeatIndex(elapsed);
   // The latest resolution gets a pop-word over the chosen character.
   const recent = [...fx.list].reverse().find((e) => elapsed < e.at + POP_MS);
   const looking =
@@ -529,6 +532,7 @@ export function ForestRaceScene({
             <span className="forest-endcard__stars">★ ★ ★</span>
             <strong>Slow and steady wins the race!</strong>
             <span>Tortoise kept going, one happy step at a time.</span>
+            <span>The End — Adventure Complete!</span>
           </div>
         )}
       </div>

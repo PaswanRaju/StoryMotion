@@ -13,6 +13,12 @@ export type StorySummary = {
   teaser: string;
   coverBackground: string; // CSS gradient placeholder until ART-01 lands
   moral: string;
+  /** Who appears in the story (for the story card). */
+  starring: string;
+  /**
+   * Characters the child can choose to cheer for. A story with one entry is a
+   * single continuous story (no character picker).
+   */
   characters: CharacterSummary[];
   badge: { title: string; description: string };
 };
@@ -27,6 +33,7 @@ export const storyRegistry: StorySummary[] = [
     coverBackground:
       'linear-gradient(160deg, var(--color-sage) 0%, var(--color-cream) 100%)',
     moral: 'Slow and steady, with heart, wins the day.',
+    starring: 'Tortoise & Hare',
     characters: [
       {
         id: 'tortoise',
@@ -49,20 +56,16 @@ export const storyRegistry: StorySummary[] = [
     title: 'Jack and the Beanstalk',
     theme: 'Curiosity & Courage',
     teaser:
-      'Plant a magic bean, climb into the clouds, and make it home safe and sound.',
+      'Trade a cow for magic beans, climb into the clouds, meet a Giant and his golden hen, and race home.',
     coverBackground:
       'linear-gradient(160deg, var(--color-sky) 0%, var(--color-cream) 100%)',
-    moral: 'A little courage and a kind heart can take you far.',
+    moral: 'Be brave, think before you choose, and share what you have.',
+    starring: 'Jack, his Mother, Milky-White, the Trader, the Giant & the Golden Hen',
     characters: [
       {
         id: 'jack',
         name: 'Jack',
         persona: 'Curious and brave, always ready for an adventure.',
-      },
-      {
-        id: 'adventurer',
-        name: 'Adventurer',
-        persona: 'Bold explorer with a kind heart.',
       },
     ],
     badge: {
@@ -75,25 +78,16 @@ export const storyRegistry: StorySummary[] = [
     title: 'The Three Little Pigs',
     theme: 'Planning & Teamwork',
     teaser:
-      "Gather supplies, build strong, and keep your house safe from a mischievous wolf's wind.",
+      'Three little pigs build houses of wheat, stone and brick — and outsmart a huffing, puffing wolf together.',
     coverBackground:
       'linear-gradient(160deg, var(--color-honey) 0%, var(--color-cream) 100%)',
-    moral: 'A little planning helps you build something that lasts.',
+    moral: 'Hard work and careful planning keep everyone safe.',
+    starring: 'The Three Little Pigs & the Big Bad Wolf',
     characters: [
       {
-        id: 'pig-one',
-        name: 'Pig One',
-        persona: 'Loves to build fast and have fun.',
-      },
-      {
-        id: 'pig-two',
-        name: 'Pig Two',
-        persona: 'Likes things sturdy and dependable.',
-      },
-      {
-        id: 'pig-three',
-        name: 'Pig Three',
-        persona: 'A careful planner who thinks ahead.',
+        id: 'three-pigs',
+        name: 'The Three Little Pigs',
+        persona: 'Three siblings, three houses, one big adventure.',
       },
     ],
     badge: {

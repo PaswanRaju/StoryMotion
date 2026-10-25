@@ -705,3 +705,11 @@
 .beanstalk-scene .forest-endcard {
   top: 33%;
 }
+
+/* Scene fade used when the storybook hands over to / from this renderer. */
+.bs-overlay {
+  position: absolute;
+  inset: 0;
+  background: #120d1e;
+  pointer-events: none;
+}

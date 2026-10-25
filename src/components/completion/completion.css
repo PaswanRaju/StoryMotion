@@ -174,3 +174,22 @@
     display: none;
   }
 }
+.completion-kicker {
+  margin: 8px 0 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffe08a;
+}
+.completion-cast {
+  background: none;
+  width: min(560px, 100%);
+  margin: 0 auto;
+}
+.completion-cast svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}

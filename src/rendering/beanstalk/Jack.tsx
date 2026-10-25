@@ -8,15 +8,22 @@ import { JACK_BOX } from './timeline';
  */
 export const Jack = memo(function Jack({
   variant = 'jack',
+  asGroup = false,
 }: {
   variant?: 'jack' | 'adventurer';
+  /** Render as a <g> (feet at the origin) for composing inside a larger SVG stage. */
+  asGroup?: boolean;
 }) {
   const { x, y, w, h } = JACK_BOX;
   const tunic = variant === 'jack' ? '#4fa35a' : '#e2674f';
   const tunicDark = variant === 'jack' ? '#3b8346' : '#b9493a';
   const id = variant;
+  const Root = asGroup ? 'g' : 'svg';
+  const rootProps = asGroup
+    ? {}
+    : { viewBox: `${x} ${y} ${w} ${h}`, width: w, height: h };
   return (
-    <svg viewBox={`${x} ${y} ${w} ${h}`} width={w} height={h} aria-hidden="true">
+    <Root {...rootProps} aria-hidden="true">
       <defs>
         <linearGradient id={`jk-skin-${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#ffd9b8" />
@@ -109,6 +116,6 @@ export const Jack = memo(function Jack({
           </g>
         </g>
       </g>
-    </svg>
+    </Root>
   );
 });

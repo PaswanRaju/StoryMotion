@@ -9,6 +9,7 @@ import { RewardBadge } from './RewardBadge';
 import { PrimaryButton } from '../layout/PrimaryButton';
 import { Hare, Tortoise } from '../../rendering/forest/characters';
 import '../../rendering/forest/forest.css';
+import { CompletionCast } from './CompletionCast';
 import './completion.css';
 
 const CONFETTI = ['#e8775f', '#f5bf72', '#7fb8de', '#a9d7a0', '#d99ad0', '#fff4c2'];
@@ -40,6 +41,11 @@ export function CompletionPage() {
     story.characters[0];
 
   const playAgain = () => {
+    if (story.characters.length === 1) {
+      setCharacterId(story.characters[0].id);
+      navigate(routes.player(story.id));
+      return;
+    }
     setCharacterId(null);
     navigate(routes.characterSelect(story.id));
   };
@@ -78,11 +84,14 @@ export function CompletionPage() {
             </div>
           </div>
         ) : (
-          <div className="completion-emoji" aria-hidden="true">
-            🎉
-          </div>
+          <CompletionCast storyId={story.id} />
         )}
-        <h2 className="completion-title">You did it, {character.name}'s friend!</h2>
+        <p className="completion-kicker">The End — Adventure Complete!</p>
+        <h2 className="completion-title">
+          {story.characters.length === 1
+            ? `You finished ${story.title}!`
+            : `You did it, ${character.name}'s friend!`}
+        </h2>
         <p className="completion-moral">"{story.moral}"</p>
       </div>
 

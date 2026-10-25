@@ -2,61 +2,39 @@ import type { BodyGesture, BodyGestureEvent } from '../vision/bodyGestures';
 import type { MagicAction } from '../vision/magicGesture';
 import type { StoryId } from './types';
 
-/** Story time (not wall time): it holds while an invitation is open. */
-export const STORY_DURATION_MS = 42000;
-/**
- * Optional invitations. Each opens at startMs (or as soon as camera setup finishes)
- * and lasts windowMs. While one is open, story time holds — the character waits at
- * the obstacle — so the child's response window never runs out behind their back.
- * A moment that camera setup outlasts by more than its window resolves on its own.
- */
-type MomentSpec = {
-  id: string;
-  startMs: number;
-  windowMs: number;
-  accepts: readonly BodyGesture[];
-};
-/** The Tortoise and the Hare: shield, path choice, final boost. */
-export const MOMENTS = [
-  { id: 'shield', startMs: 11000, windowMs: 8000, accepts: ['ARMS_WIDE'] },
-  {
-    id: 'path',
-    startMs: 21500,
-    windowMs: 7000,
-    accepts: ['LEAN_LEFT', 'LEAN_RIGHT'],
-  },
-  { id: 'boost', startMs: 26000, windowMs: 7000, accepts: ['HAND_RAISE'] },
-] as const satisfies readonly MomentSpec[];
-/** Jack and the Beanstalk: grow the beanstalk, dodge on the climb, glide home. */
-export const BEANSTALK_MOMENTS = [
-  { id: 'grow', startMs: 12000, windowMs: 8000, accepts: ['HAND_RAISE'] },
-  {
-    id: 'dodge',
-    startMs: 24000,
-    windowMs: 7000,
-    accepts: ['LEAN_LEFT', 'LEAN_RIGHT'],
-  },
-  { id: 'glide', startMs: 40000, windowMs: 8000, accepts: ['ARMS_WIDE'] },
-] as const satisfies readonly MomentSpec[];
-export type MomentId =
-  | (typeof MOMENTS)[number]['id']
-  | (typeof BEANSTALK_MOMENTS)[number]['id'];
+import { storyDuration, storyMoments } from '../data/stories/scenes';
+import type { MomentId } from '../data/stories/scenes';
+
+export type { MomentId };
 export type Moment = {
   id: MomentId;
   startMs: number;
   windowMs: number;
   accepts: readonly BodyGesture[];
 };
+/**
+ * Optional invitations. Each opens at startMs (or as soon as camera setup finishes)
+ * and lasts windowMs. While one is open, story time holds — the character waits at
+ * the obstacle — so the child's response window never runs out behind their back.
+ * A moment that camera setup outlasts by more than its window resolves on its own.
+ * Moments and durations come from the scene list in data/stories/scenes.ts.
+ */
 export type StoryScript = { durationMs: number; moments: readonly Moment[] };
 /** Each story's length (story time) and its optional invitations. */
 export const SCRIPTS: Record<StoryId, StoryScript> = {
-  hare: { durationMs: STORY_DURATION_MS, moments: MOMENTS },
-  beanstalk: { durationMs: 56000, moments: BEANSTALK_MOMENTS },
-  pigs: { durationMs: STORY_DURATION_MS, moments: MOMENTS },
+  hare: { durationMs: storyDuration('hare'), moments: storyMoments('hare') },
+  beanstalk: {
+    durationMs: storyDuration('beanstalk'),
+    moments: storyMoments('beanstalk'),
+  },
+  pigs: { durationMs: storyDuration('pigs'), moments: storyMoments('pigs') },
 };
+/** The Tortoise and the Hare: shield, path choice, final boost. */
+export const MOMENTS = SCRIPTS.hare.moments;
+export const STORY_DURATION_MS = SCRIPTS.hare.durationMs;
 export const momentIndex = (id: MomentId, storyId: StoryId = 'hare') =>
   SCRIPTS[storyId].moments.findIndex((moment) => moment.id === id);
-export const MAGIC_START_MS = MOMENTS[0].startMs as number;
+export const MAGIC_START_MS = MOMENTS[0].startMs;
 export const MAGIC_WINDOW_MS = MOMENTS[0].windowMs;
 
 export type AutomaticStoryState = {

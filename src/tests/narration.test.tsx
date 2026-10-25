@@ -7,7 +7,12 @@ import { narrator } from '../audio/narrator';
 import { StoryPlayerPage } from '../components/player/StoryPlayerPage';
 import { SessionProvider } from '../app/SessionContext';
 import { animatedBeats } from '../data/stories/animatedBeats';
+import { MOMENTS } from '../engine/automaticStory';
+import { STORY_SCENES } from '../data/stories/scenes';
 import type { BodyGestureEvent } from '../vision/bodyGestures';
+
+/** Story second at which the first invitation (the shield) opens. */
+const SHIELD_S = MOMENTS[0].startMs / 1000;
 
 class FakeUtterance {
   rate = 1;
@@ -178,13 +183,13 @@ describe('story player narration', () => {
     vi.unstubAllGlobals();
     vi.useRealTimers();
   });
-  function renderPlayer() {
+  function renderPlayer(storyId = 'hare') {
     const router = createMemoryRouter(
       [
         { path: '/library/:storyId/play', element: <StoryPlayerPage /> },
         { path: '/library/:storyId/complete', element: <h1>Story complete</h1> },
       ],
-      { initialEntries: ['/library/hare/play'] },
+      { initialEntries: [`/library/${storyId}/play`] },
     );
     const tree = () => (
       <StrictMode>
@@ -207,7 +212,7 @@ describe('story player narration', () => {
   it('narrates each beat exactly once, in order, during normal playback', () => {
     renderPlayer();
     // No input: three held invitations resolve themselves along the way.
-    for (let second = 0; second < 65; second++) advance(1000);
+    for (let second = 0; second < 80; second++) advance(1000);
     const spoken = synth.texts();
     expect(spoken.filter((text) => beats.includes(text))).toEqual([...beats]);
     // Plus exactly one gentle reaction per resolved moment, never a repeated beat.
@@ -215,18 +220,30 @@ describe('story player narration', () => {
     expect(screen.getByText('Story complete')).toBeInTheDocument();
     vi.runOnlyPendingTimers();
     expect(synth.cancel).toHaveBeenCalled(); // leaving the player silences it
-  }, 20000); // renders a whole 65 s playthrough; slow machines need headroom
+  }, 20000); // renders a whole 80 s playthrough; slow machines need headroom
+  it.each(['beanstalk', 'pigs'] as const)(
+    'narrates every %s scene exactly once, in story order, with no input',
+    (storyId) => {
+      renderPlayer(storyId);
+      for (let second = 0; second < 240; second++) advance(1000);
+      const lines = STORY_SCENES[storyId].map((scene) => scene.narration);
+      const spoken = synth.texts().filter((text) => lines.includes(text));
+      expect(spoken).toEqual(lines);
+      expect(screen.getByText('Story complete')).toBeInTheDocument();
+    },
+    30000,
+  );
   it('does not restart the line on pause/resume, mute/unmute or gestures', () => {
     renderPlayer();
     advance(2000);
     fireEvent.click(screen.getByRole('button', { name: 'Pause story' }));
     advance(3000); // paused: no ticks, no speech
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
-    // No boundary events from the fake voice: resumes near "(Hare) challenged…".
-    expect(synth.texts().at(-1)).toMatch(/^(Hare )?laughed and challenged/);
+    // No boundary events from the fake voice: resumes near "(a) sunny forest…".
+    expect(synth.texts().at(-1)).toMatch(/^(a )?sunny forest, lived a speedy Hare/);
     fireEvent.click(screen.getByRole('button', { name: 'Mute narration' }));
     fireEvent.click(screen.getByRole('button', { name: 'Unmute narration' }));
-    for (let second = 0; second < 9; second++) advance(1000);
+    for (let second = 0; second < SHIELD_S - 2; second++) advance(1000);
     expect(screen.getByText('Tortoise needs your help!')).toBeInTheDocument();
     // A gesture that the moment does not ask for says nothing.
     fireEvent.click(screen.getByText('Synthetic LEAN_RIGHT'));
@@ -245,7 +262,8 @@ describe('story player narration', () => {
   });
   it('mutes the reaction too, and never speaks it later', () => {
     renderPlayer();
-    for (let second = 0; second < 11; second++) advance(1000);
+    for (let second = 0; second < SHIELD_S; second++) advance(1000);
+    expect(screen.getByText('Tortoise needs your help!')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Mute narration' }));
     fireEvent.click(screen.getByText('Synthetic ARMS_WIDE'));
     fireEvent.click(screen.getByRole('button', { name: 'Unmute narration' }));
