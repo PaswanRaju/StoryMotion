@@ -4,7 +4,6 @@ import { PrimaryButton } from '../layout/PrimaryButton';
 type PauseDialogProps = {
   onResume: () => void;
   onReplayInstruction: () => void;
-  onRestartChapter: () => void;
   onRestartStory: () => void;
   onExitToLibrary: () => void;
 };
@@ -12,7 +11,6 @@ type PauseDialogProps = {
 export function PauseDialog({
   onResume,
   onReplayInstruction,
-  onRestartChapter,
   onRestartStory,
   onExitToLibrary,
 }: PauseDialogProps) {
@@ -21,10 +19,7 @@ export function PauseDialog({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
         <PrimaryButton variant="secondary" onClick={onReplayInstruction}>
-          Replay Instruction
-        </PrimaryButton>
-        <PrimaryButton variant="ghost" onClick={onRestartChapter}>
-          Restart Chapter
+          Hear That Again
         </PrimaryButton>
         <PrimaryButton variant="ghost" onClick={onRestartStory}>
           Restart Story

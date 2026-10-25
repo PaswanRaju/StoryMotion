@@ -36,6 +36,7 @@ export function ModeSelect({ mode, onChange }: ModeSelectProps) {
             type="button"
             className={`card card--selectable${selected ? ' card--selected' : ''}`}
             aria-pressed={selected}
+            data-sfx="select"
             onClick={() => onChange(option.id)}
           >
             <div style={{ fontSize: '2rem' }} aria-hidden="true">

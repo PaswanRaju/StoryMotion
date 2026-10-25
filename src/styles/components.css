@@ -166,3 +166,65 @@
     padding: var(--space-4);
   }
 }
+
+/* Glass header with a glowing star mark */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 10px auto 0;
+  width: min(1280px, calc(100% - 20px));
+  border-radius: 999px;
+  background: rgb(255 255 255 / 55%);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgb(255 255 255 / 85%);
+  box-shadow: 0 10px 30px -18px rgb(58 38 20 / 40%);
+  padding: 10px 22px;
+}
+.app-header__logo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 20px;
+  color: #fffaf0;
+  background: linear-gradient(135deg, #ffd36e, #f0a24a 50%, #8a6fd8);
+  box-shadow: 0 4px 14px rgb(240 162 74 / 45%);
+  animation: logo-spin 8s ease-in-out infinite;
+}
+@keyframes logo-spin {
+  0%,
+  80%,
+  100% {
+    rotate: 0deg;
+  }
+  90% {
+    rotate: 180deg;
+  }
+}
+.app-header__word {
+  background: linear-gradient(90deg, #5a3d22, #8a5a14 50%, #6a5fa8);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+.app-header__tag {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a6f58;
+}
+@media (max-width: 600px) {
+  .app-header__tag {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-header__logo {
+    animation: none;
+  }
+}

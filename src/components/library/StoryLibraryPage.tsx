@@ -9,24 +9,21 @@ export function StoryLibraryPage() {
   const { mode } = useSession();
 
   return (
-    <section>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-        }}
-      >
-        <h2>Story Library</h2>
-        <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
+    <section className="library">
+      <header className="library__head">
+        <div>
+          <p className="eyebrow">Choose your adventure</p>
+          <h2>Story Library</h2>
+          <p className="library__sub">
+            Every story is open and ready to play. Watch, move, and make the magic happen!
+          </p>
+        </div>
+        <p className="library__mode">
           Playing: <strong>{mode === 'family' ? 'Family Adventure' : 'Solo Adventure'}</strong>
           {' · '}
           <Link to={routes.home()}>Change</Link>
         </p>
-      </div>
-      <p>Every story is open and ready to play — pick any one to begin.</p>
+      </header>
       <StoryGrid
         stories={storyRegistry}
         onSelect={(storyId) => navigate(routes.characterSelect(storyId))}

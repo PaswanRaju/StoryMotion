@@ -1,0 +1,242 @@
+/* Menu art: illustrated covers and character portraits. */
+.story-cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  isolation: isolate;
+}
+.story-cover__scene,
+.story-cover__scene svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.story-cover__scene {
+  transition: scale 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* The forest-scene class gives the real characters their animation rules; undo its stage box. */
+.story-cover .forest-scene.story-cover__cast,
+.forest-scene.art-stage {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  background: none;
+}
+.forest-scene.art-stage {
+  position: relative;
+  inset: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+}
+.story-cover__cast > * {
+  position: absolute;
+  bottom: 6%;
+  transform-origin: 50% 100%;
+  transition: translate 500ms cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.story-cover__cast svg,
+.art-stage svg {
+  display: block;
+  width: auto;
+  height: 100%;
+}
+.story-cover--hare .cast-a {
+  left: 8%;
+  height: 40%;
+}
+.story-cover--hare .cast-b {
+  left: 44%;
+  height: 56%;
+}
+.story-cover--beanstalk .cast-a {
+  left: 28%;
+  height: 46%;
+}
+.story-cover--beanstalk .cast-b {
+  left: 62%;
+  height: 46%;
+  animation-delay: 0.4s;
+}
+.story-cover--pigs .cast-a {
+  left: 4%;
+  height: 36%;
+}
+.story-cover--pigs .cast-b {
+  left: 22%;
+  height: 40%;
+}
+.story-cover--pigs .cast-c {
+  left: 42%;
+  height: 38%;
+}
+.story-cover::after {
+  /* soft light and depth at the bottom, where the text card begins */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 75% 15%, rgb(255 246 207 / 40%), transparent 70%),
+    linear-gradient(180deg, transparent 65%, rgb(20 28 39 / 28%));
+}
+
+/* Ambient motion inside covers */
+.art-clouds {
+  animation: art-drift 14s ease-in-out infinite alternate;
+}
+@keyframes art-drift {
+  to {
+    translate: 26px 0;
+  }
+}
+.art-sun {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pulse 4s ease-in-out infinite alternate;
+}
+@keyframes art-pulse {
+  to {
+    scale: 1.12;
+    opacity: 0.85;
+  }
+}
+.art-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-twinkle 2.4s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes art-twinkle {
+  40%,
+  60% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+.art-leaf {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: art-leaf 3s ease-in-out infinite alternate;
+}
+@keyframes art-leaf {
+  to {
+    rotate: 8deg;
+  }
+}
+.art-smoke {
+  animation: art-smoke 3s ease-in-out infinite;
+}
+@keyframes art-smoke {
+  50% {
+    translate: 4px -8px;
+    opacity: 0.4;
+  }
+}
+.art-wind {
+  animation: art-wind 2.6s ease-in-out infinite;
+}
+@keyframes art-wind {
+  from {
+    translate: -30px 0;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  to {
+    translate: 60px 0;
+    opacity: 0;
+  }
+}
+.art-kid,
+.art-pig {
+  overflow: visible;
+}
+.art-kid__body,
+.art-pig__body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: art-bob 1.6s ease-in-out infinite;
+}
+@keyframes art-bob {
+  50% {
+    translate: 0 -4px;
+    scale: 1.02 0.98;
+  }
+}
+.art-kid__arm {
+  transform-box: fill-box;
+  transform-origin: 20% 10%;
+  animation: art-wave 1.8s ease-in-out infinite;
+}
+@keyframes art-wave {
+  50% {
+    rotate: -50deg;
+  }
+}
+.cast-b .art-pig__body,
+.cast-b .art-kid__body {
+  animation-delay: 0.3s;
+}
+.cast-c .art-pig__body {
+  animation-delay: 0.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-cover *,
+  .art-stage * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* forest.css pins .forest-actor to the top-left of the stage; menu art anchors to the ground. */
+.story-cover .story-cover__cast > *,
+.story-cover .story-cover__cast > .forest-actor {
+  top: auto;
+  bottom: 7%;
+  will-change: auto;
+}
+.forest-scene.art-stage > .forest-actor {
+  position: relative;
+  top: auto;
+  left: auto;
+}
+/* Beanstalk poster: Jack climbing the stalk, glowing beans, shimmering castle */
+.story-cover--beanstalk .cast-a {
+  left: 38%;
+  bottom: 34%;
+  height: 40%;
+}
+.story-cover .cast-a.jack {
+  width: auto;
+  transform-origin: 50% 100%;
+}
+.story-cover .cast-a.jack svg {
+  height: 100%;
+  width: auto;
+}
+.art-bean-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pulse 1s ease-in-out infinite alternate;
+}
+.art-window {
+  animation: bs-window 2.4s ease-in-out infinite alternate;
+}
+.art-rays {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: bs-rays 6s ease-in-out infinite alternate;
+}
+.art-stage .jack {
+  position: relative;
+  height: 100%;
+  width: auto;
+}
+.art-stage .jack svg {
+  height: 100%;
+  width: auto;
+}

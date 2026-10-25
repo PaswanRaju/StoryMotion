@@ -1,11 +1,13 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
 import type { Mode } from '../engine/types';
+import { setSfxEnabled } from '../audio/sfx';
 
 type SessionValue = {
   mode: Mode;
@@ -14,6 +16,9 @@ type SessionValue = {
   setCharacterId: (characterId: string | null) => void;
   audioEnabled: boolean;
   toggleAudio: () => void;
+  /** Sound effects (clicks, magic, celebrations); narration is separate. */
+  sfxEnabled: boolean;
+  toggleSfx: () => void;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -27,6 +32,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>('solo');
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [sfxEnabled, setSfxOn] = useState(true);
+  useEffect(() => setSfxEnabled(sfxEnabled), [sfxEnabled]);
 
   const value = useMemo<SessionValue>(
     () => ({
@@ -36,8 +43,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setCharacterId,
       audioEnabled,
       toggleAudio: () => setAudioEnabled((prev) => !prev),
+      sfxEnabled,
+      toggleSfx: () => setSfxOn((prev) => !prev),
     }),
-    [mode, characterId, audioEnabled],
+    [mode, characterId, audioEnabled, sfxEnabled],
   );
 
   return (

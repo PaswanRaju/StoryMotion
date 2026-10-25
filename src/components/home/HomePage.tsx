@@ -3,30 +3,54 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { Hero } from './Hero';
 import { ModeSelect } from './ModeSelect';
 import { HowItWorksModal } from './HowItWorksModal';
+import { GestureHint } from '../player/GestureHint';
 import { useSession } from '../../app/SessionContext';
+import type { BodyGesture } from '../../vision/bodyGestures';
+
+const STEPS: { gesture: BodyGesture; title: string; text: string }[] = [
+  {
+    gesture: 'LEAN_LEFT',
+    title: '1 · Watch',
+    text: 'The story plays by itself, like your favorite cartoon.',
+  },
+  {
+    gesture: 'ARMS_WIDE',
+    title: '2 · Move once',
+    text: 'When a friend needs help, do one quick move — or tap a button.',
+  },
+  {
+    gesture: 'HAND_RAISE',
+    title: '3 · Magic happens!',
+    text: 'Shields, sparkles and speed boosts — then the story carries on.',
+  },
+];
 
 export function HomePage() {
   const { mode, setMode, audioEnabled, toggleAudio } = useSession();
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   return (
-    <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <section className="home">
       <Hero onHowItWorks={() => setShowHowItWorks(true)} />
 
-      <div>
+      <ol className="home-steps" aria-label="How StoryMotion works">
+        {STEPS.map((step, i) => (
+          <li key={step.title} style={{ animationDelay: `${200 + i * 120}ms` }}>
+            <GestureHint gesture={step.gesture} />
+            <div>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div className="home-mode">
         <h2>How do you want to play?</h2>
         <ModeSelect mode={mode} onChange={setMode} />
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 'var(--space-3)',
-        }}
-      >
+      <div className="home-footer">
         <button
           type="button"
           className="btn btn--ghost btn--small"
@@ -40,14 +64,7 @@ export function HomePage() {
           )}
           {audioEnabled ? 'Sound On' : 'Sound Off'}
         </button>
-
-        <p
-          style={{
-            margin: 0,
-            fontSize: 'var(--fs-xs)',
-            color: 'var(--color-text-muted)',
-          }}
-        >
+        <p>
           🔒 Your camera stays on this device. We never record, save, or send
           video anywhere.
         </p>

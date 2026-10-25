@@ -1,22 +1,15 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { CameraSetup } from './CameraSetup';
+import { Navigate, useParams } from 'react-router-dom';
 import { getStoryById } from '../../data/stories/registry';
 import { StoryNotFound } from '../library/StoryNotFound';
 import { routes } from '../../app/router';
 
+/** Preserve bookmarked setup URLs without showing the obsolete simulated permission flow. */
 export function CameraSetupPage() {
   const { storyId } = useParams<{ storyId: string }>();
-  const navigate = useNavigate();
   const story = storyId ? getStoryById(storyId) : undefined;
-
-  if (!story) {
-    return <StoryNotFound />;
-  }
-
-  return (
-    <CameraSetup
-      onBack={() => navigate(routes.characterSelect(story.id))}
-      onContinue={() => navigate(routes.player(story.id))}
-    />
+  return story ? (
+    <Navigate to={routes.player(story.id)} replace />
+  ) : (
+    <StoryNotFound />
   );
 }

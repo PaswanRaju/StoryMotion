@@ -1,0 +1,498 @@
+/* =========================================================================
+   Cosmic dark theme. Loaded after the component styles; selectors start with
+   `body` so they also win over screen styles that load later with their code.
+   The story scenes themselves keep their storybook colors.
+   ========================================================================= */
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  color-scheme: dark;
+}
+body h1,
+body h2,
+body h3,
+body h4 {
+  color: var(--color-heading);
+}
+body a {
+  color: #8fdcff;
+}
+body .eyebrow,
+body .character-select .eyebrow {
+  color: var(--color-gold);
+  text-shadow: 0 0 12px rgb(255 211 110 / 45%);
+}
+
+/* ---------- Buttons: luminous, tactile, with a light sweep ---------- */
+body .btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    translate 150ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease;
+}
+body .btn::after,
+body .hero__cta::after,
+body .story-card__play::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 45%) 50%, transparent 70%);
+  translate: -120% 0;
+  transition: translate 650ms ease;
+  pointer-events: none;
+}
+body .btn:not(:disabled):hover::after,
+body .hero__cta:hover::after,
+body .story-card__play:hover::after {
+  translate: 120% 0;
+}
+body .hero__cta,
+body .story-card__play {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+body .btn:not(:disabled):hover {
+  translate: 0 -2px;
+}
+body .btn:not(:disabled):active {
+  translate: 0 2px;
+}
+body .btn--primary {
+  color: #2a1640;
+  background: linear-gradient(135deg, #fff1b8, #ffd36e 45%, #ff9f5a);
+  box-shadow:
+    0 4px 0 #b86a2a,
+    0 10px 28px rgb(255 170 90 / 40%);
+}
+body .btn--primary:not(:disabled):hover {
+  box-shadow:
+    0 5px 0 #b86a2a,
+    0 12px 34px rgb(255 170 90 / 55%),
+    0 0 0 6px rgb(255 211 110 / 18%);
+}
+body .btn--secondary {
+  color: #08203a;
+  background: linear-gradient(135deg, #b8f1ff, #59d6ff 55%, #6f8bff);
+  box-shadow:
+    0 4px 0 #2a5fa8,
+    0 10px 26px rgb(89 214 255 / 35%);
+}
+body .btn--ghost {
+  color: var(--color-text);
+  background: rgb(255 255 255 / 6%);
+  border: 1.5px solid rgb(160 190 255 / 35%);
+  backdrop-filter: blur(8px);
+}
+body .btn--ghost:not(:disabled):hover {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 18px rgb(89 214 255 / 35%);
+}
+body .btn:disabled {
+  opacity: 0.45;
+}
+
+/* ---------- Glass surfaces ---------- */
+body .card,
+body .modal {
+  color: var(--color-text);
+  background: linear-gradient(160deg, rgb(40 40 100 / 70%), rgb(18 18 52 / 80%));
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 20px 50px -24px rgb(0 0 0 / 70%);
+}
+body .modal-overlay {
+  background: rgb(5 6 25 / 70%);
+  backdrop-filter: blur(4px);
+}
+body .modal {
+  animation: cosmic-pop 380ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+@keyframes cosmic-pop {
+  from {
+    opacity: 0;
+    scale: 0.9;
+    translate: 0 12px;
+  }
+}
+
+/* ---------- Header ---------- */
+body .app-header {
+  background: rgb(14 16 48 / 62%);
+  border: 1px solid rgb(150 170 255 / 22%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 14px 40px -20px rgb(0 0 0 / 80%);
+}
+body .app-header__word {
+  background: linear-gradient(90deg, #ffffff, #ffd36e 45%, #9fdcff 80%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+body .app-header__tag {
+  color: #9fa8e0;
+}
+body .app-header__logo {
+  position: relative;
+  background: radial-gradient(circle at 35% 30%, #fff6d0, #ffb85c 45%, #8a5cff 100%);
+  box-shadow: 0 0 22px rgb(255 184 92 / 55%);
+}
+.app-header__orbit {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px dashed rgb(159 220 255 / 55%);
+  animation: orbit-spin 10s linear infinite;
+}
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: #c9cff5;
+  background: rgb(255 255 255 / 6%);
+  border: 1.5px solid rgb(160 190 255 / 30%);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+.sound-toggle.is-on {
+  color: #fff6d8;
+  border-color: rgb(255 211 110 / 70%);
+  box-shadow: 0 0 18px rgb(255 211 110 / 30%);
+}
+.sound-toggle__bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.sound-toggle__bars i {
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.sound-toggle.is-on .sound-toggle__bars i {
+  animation: eq-bar 0.9s ease-in-out infinite alternate;
+}
+.sound-toggle.is-on .sound-toggle__bars i:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.sound-toggle.is-on .sound-toggle__bars i:nth-child(3) {
+  animation-delay: -0.6s;
+}
+@keyframes eq-bar {
+  to {
+    height: 14px;
+  }
+}
+@media (max-width: 600px) {
+  .sound-toggle span:not(.sound-toggle__bars) {
+    display: none;
+  }
+}
+
+/* ---------- Home ---------- */
+body .hero {
+  background:
+    radial-gradient(70% 90% at 80% 30%, rgb(155 123 255 / 35%), transparent 60%),
+    radial-gradient(60% 80% at 5% 100%, rgb(89 214 255 / 25%), transparent 60%),
+    linear-gradient(135deg, rgb(20 18 70 / 92%) 0%, rgb(36 22 90 / 88%) 55%, rgb(60 20 90 / 85%) 100%);
+  border: 1px solid rgb(160 190 255 / 25%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    0 40px 90px -40px rgb(0 0 0 / 90%),
+    0 0 80px rgb(120 90 255 / 18%);
+}
+body .hero::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    rgb(89 214 255 / 14%),
+    transparent 30%,
+    rgb(255 95 200 / 12%),
+    transparent 60%,
+    rgb(255 211 110 / 14%),
+    transparent 85%
+  );
+}
+body .hero__title {
+  background: linear-gradient(100deg, #ffffff 0%, #ffe08a 25%, #ffffff 45%, #8fe3ff 65%, #c9a8ff 85%, #ffffff 100%);
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 0 24px rgb(150 120 255 / 45%));
+}
+body .hero__eyebrow {
+  color: #9fe6ff;
+  border-color: rgb(89 214 255 / 40%);
+  background: rgb(89 214 255 / 10%);
+}
+body .hero__tagline span {
+  color: var(--color-gold);
+  text-shadow: 0 0 20px rgb(255 211 110 / 45%);
+}
+body .hero__cta {
+  color: #2a1640;
+  background: linear-gradient(135deg, #fff1b8, #ffd36e 45%, #ff9f5a);
+  box-shadow:
+    0 6px 0 #b86a2a,
+    0 16px 40px rgb(255 170 90 / 50%);
+}
+body .hero__ghost:hover {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 22px rgb(89 214 255 / 40%);
+}
+body .hero__chips li {
+  background: rgb(255 255 255 / 7%);
+  border-color: rgb(160 190 255 / 25%);
+}
+.hero__solar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  z-index: -1;
+  opacity: 0.9;
+  pointer-events: none;
+}
+body .hero__stage {
+  isolation: isolate;
+}
+body .hero__window {
+  border-color: rgb(200 215 255 / 55%);
+  box-shadow:
+    0 30px 70px -20px rgb(0 0 0 / 85%),
+    0 0 0 1px rgb(159 220 255 / 30%),
+    0 0 60px rgb(120 160 255 / 40%);
+}
+body .hero__float {
+  color: var(--color-text);
+  background: rgb(18 20 60 / 82%);
+  border: 1px solid rgb(160 190 255 / 30%);
+  box-shadow:
+    0 14px 30px rgb(0 0 0 / 50%),
+    0 0 24px rgb(120 160 255 / 25%);
+}
+body .hero__float--gesture strong {
+  color: var(--color-gold);
+}
+body .home-steps li,
+body .home-mode .card--selectable {
+  color: var(--color-text);
+  background: linear-gradient(160deg, rgb(40 40 100 / 62%), rgb(18 18 52 / 74%));
+  border: 1px solid var(--color-border);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 20px 40px -24px rgb(0 0 0 / 80%);
+}
+body .home-steps p,
+body .home-mode .card--selectable p,
+body .home-footer p {
+  color: var(--color-text-muted) !important;
+}
+body .home-mode .card--selected {
+  border-color: var(--color-gold);
+  box-shadow:
+    0 0 0 2px rgb(255 211 110 / 55%),
+    0 0 40px rgb(255 211 110 / 28%);
+}
+body .gesture-hint__halo {
+  fill: rgb(255 233 168 / 90%);
+}
+
+/* ---------- Library cards ---------- */
+body .library__sub,
+body .character-select__sub {
+  color: var(--color-text-muted);
+}
+body .library__mode {
+  background: rgb(255 255 255 / 6%);
+  border-color: rgb(160 190 255 / 25%);
+}
+body .story-card {
+  color: var(--color-text);
+  background: linear-gradient(160deg, rgb(40 40 100 / 70%), rgb(16 16 48 / 82%));
+  border: 1px solid rgb(160 190 255 / 25%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 30px 60px -30px rgb(0 0 0 / 85%);
+}
+body .story-card:hover {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    0 0 0 2px rgb(89 214 255 / 55%),
+    0 30px 70px -24px rgb(0 0 0 / 90%),
+    0 0 60px rgb(89 214 255 / 25%);
+}
+body .story-card__hint {
+  background: linear-gradient(90deg, rgb(89 214 255 / 14%), rgb(155 123 255 / 16%));
+  border: 1px solid rgb(89 214 255 / 25%);
+}
+body .story-card__chips li {
+  color: #ffe9a8;
+  background: rgb(255 211 110 / 10%);
+  border-color: rgb(255 211 110 / 30%);
+}
+body .story-card__cast {
+  color: var(--color-text-muted);
+}
+body .story-card__play {
+  color: #2a1640;
+  background: linear-gradient(135deg, #fff1b8, #ffd36e 45%, #ff9f5a);
+  box-shadow:
+    0 5px 0 #b86a2a,
+    0 12px 30px rgb(255 170 90 / 45%);
+}
+/* Orbit ring that circles the cover on hover */
+.story-card__orbit {
+  position: absolute;
+  z-index: 2;
+  right: -60px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 1.5px dashed rgb(159 220 255 / 0%);
+  pointer-events: none;
+  transition: border-color 400ms ease;
+  animation: orbit-spin 9s linear infinite;
+}
+.story-card__orbit i {
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #59d6ff 60%);
+  box-shadow: 0 0 14px #59d6ff;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+body .story-card:hover .story-card__orbit {
+  border-color: rgb(159 220 255 / 60%);
+}
+body .story-card:hover .story-card__orbit i {
+  opacity: 1;
+}
+body .story-card__theme {
+  background: rgb(10 12 40 / 65%);
+  border: 1px solid rgb(160 190 255 / 30%);
+}
+
+/* ---------- Character cards ---------- */
+body .character-card {
+  color: var(--color-text);
+  background: linear-gradient(160deg, rgb(40 40 100 / 70%), rgb(16 16 48 / 82%));
+  border: 1.5px solid rgb(160 190 255 / 25%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 30px 60px -30px rgb(0 0 0 / 85%);
+}
+body .character-card:hover {
+  border-color: rgb(89 214 255 / 60%);
+  box-shadow: 0 0 40px rgb(89 214 255 / 25%);
+}
+body .character-card.is-selected {
+  border-color: var(--color-gold);
+  box-shadow:
+    0 0 0 3px rgb(255 211 110 / 45%),
+    0 0 60px rgb(255 211 110 / 35%);
+}
+body .character-card__persona {
+  color: var(--color-text-muted);
+}
+body .character-card__pick {
+  color: #ffe9a8;
+  background: rgb(255 211 110 / 10%);
+  border-color: rgb(255 211 110 / 35%);
+}
+body .character-card.is-selected .character-card__pick {
+  color: #2a1640;
+  background: var(--color-gold);
+}
+body .character-card__stage {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 15%);
+}
+
+/* ---------- Story player shell ---------- */
+body .player-toolbar__title p {
+  color: var(--color-text-muted);
+}
+body .automatic-player .player-toolbar__btn {
+  color: var(--color-text);
+  background: rgb(255 255 255 / 6%);
+  border: 1.5px solid rgb(160 190 255 / 32%);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 35%);
+}
+body .automatic-player .player-toolbar__btn:hover {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 20px rgb(89 214 255 / 35%);
+}
+body .automatic-player .theater {
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgb(155 123 255 / 22%), transparent 60%),
+    linear-gradient(180deg, #1b1d52 0%, #0f1236 100%);
+  border: 1px solid rgb(160 190 255 / 25%);
+  box-shadow:
+    0 30px 70px -24px rgb(0 0 0 / 85%),
+    0 0 60px rgb(120 90 255 / 22%);
+}
+body .automatic-player .theater.is-asking {
+  box-shadow:
+    0 30px 70px -24px rgb(0 0 0 / 85%),
+    0 0 0 2px rgb(89 214 255 / 65%),
+    0 0 70px rgb(89 214 255 / 35%);
+}
+body .automatic-player .story-actions .btn {
+  border-radius: 999px;
+}
+
+/* ---------- Completion ---------- */
+body .completion-stage {
+  background:
+    radial-gradient(90% 80% at 50% 100%, rgb(255 211 110 / 70%) 0%, transparent 65%),
+    radial-gradient(80% 60% at 50% 0%, rgb(155 123 255 / 45%), transparent 60%),
+    linear-gradient(180deg, #14164a 0%, #2a1a5e 60%, #4a2a6a 100%);
+  border: 1px solid rgb(160 190 255 / 25%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header__orbit,
+  .story-card__orbit,
+  .sound-toggle__bars i {
+    animation: none !important;
+  }
+}
+
+/* The in-scene prompt cards stay light (they sit on the bright storybook picture). */
+body .automatic-player .magic-invitation {
+  color: #3a2a1a;
+}
+body .automatic-player .magic-invitation .btn--secondary small {
+  color: #08203a;
+}

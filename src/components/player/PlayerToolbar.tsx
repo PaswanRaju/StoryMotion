@@ -18,44 +18,42 @@ export function PlayerToolbar({
   onRestart,
 }: PlayerToolbarProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 'var(--space-3)',
-      }}
-    >
-      <div>
-        <h2 style={{ marginBottom: 0 }}>{title}</h2>
-        <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>{chapterLabel}</p>
+    <div className="player-toolbar">
+      <div className="player-toolbar__title">
+        <h2>{title}</h2>
+        <p>{chapterLabel}</p>
       </div>
-      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+      <div className="player-toolbar__controls">
         <button
           type="button"
-          className="btn btn--ghost btn--small"
+          className="btn btn--ghost player-toolbar__btn"
           onClick={onToggleMute}
           aria-pressed={muted}
+          data-sfx="toggle"
           aria-label={muted ? 'Unmute narration' : 'Mute narration'}
         >
-          {muted ? <VolumeX size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}
+          {muted ? (
+            <VolumeX size={18} aria-hidden="true" />
+          ) : (
+            <Volume2 size={18} aria-hidden="true" />
+          )}
+          {muted ? 'Sound off' : 'Sound on'}
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--small"
+          className="btn btn--ghost player-toolbar__btn"
           onClick={onRestart}
           aria-label="Restart story"
         >
-          <RotateCcw size={18} aria-hidden="true" />
+          <RotateCcw size={18} aria-hidden="true" /> Replay
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--small"
+          className="btn btn--ghost player-toolbar__btn"
           onClick={onPause}
           aria-label="Pause story"
         >
-          <Pause size={18} aria-hidden="true" />
+          <Pause size={18} aria-hidden="true" /> Pause
         </button>
       </div>
     </div>

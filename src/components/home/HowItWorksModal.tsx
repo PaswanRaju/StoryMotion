@@ -10,12 +10,12 @@ const STEPS = [
     text: 'Choose a tale and the character you want to play as.',
   },
   {
-    title: '2. Move to make it happen',
-    text: 'Squat, reach, march, or jump along with the story — the camera (or a tap, if you skip it) counts your moves.',
+    title: '2. Settle in and watch',
+    text: 'The animated story plays by itself. You can pause or replay whenever you like.',
   },
   {
     title: '3. Watch the story react',
-    text: 'Every move changes the scene. Finish the story and earn a badge!',
+    text: 'At a magic moment, briefly raise one hand or tap a button. Doing nothing is fine — the story keeps going!',
   },
 ];
 

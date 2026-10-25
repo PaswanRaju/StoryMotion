@@ -1,0 +1,52 @@
+.gesture-demo {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+  color: #493426;
+  background: #f7f1df;
+}
+.gesture-demo button {
+  min-height: 44px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.gesture-demo button:disabled {
+  cursor: default;
+}
+.gesture-demo section {
+  margin-top: 24px;
+}
+.gesture-demo .magic-scene {
+  background: #c8e2e8;
+  border-radius: 16px;
+  height: 110px;
+  display: grid;
+  place-items: center;
+}
+.gesture-demo .magic-scene span {
+  font-size: 64px;
+  color: #735009;
+  display: block;
+}
+.gesture-demo .magic-sparkle {
+  animation: gesture-magic 700ms ease-out;
+}
+@keyframes gesture-magic {
+  0% {
+    transform: scale(0.6) rotate(-30deg);
+  }
+  50% {
+    transform: scale(1.5) rotate(20deg);
+    color: #a8510b;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gesture-demo .magic-sparkle {
+    animation: none;
+  }
+}

@@ -1,0 +1,176 @@
+.completion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+.completion-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 36px 20px 40px;
+  border-radius: 32px;
+  color: #fffaf0;
+  background:
+    radial-gradient(90% 80% at 50% 100%, #f5bf72 0%, transparent 70%),
+    linear-gradient(180deg, #24364a 0%, #3b5a4a 70%, #6a9a5a 100%);
+  box-shadow: 0 28px 60px -24px rgb(20 28 39 / 70%);
+  isolation: isolate;
+}
+.completion-rays {
+  position: absolute;
+  left: 50%;
+  bottom: -60%;
+  width: 160%;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  z-index: -1;
+  background: repeating-conic-gradient(from 0deg, rgb(255 236 170 / 22%) 0deg 10deg, transparent 10deg 24deg);
+  border-radius: 50%;
+  animation: completion-rays 40s linear infinite;
+}
+@keyframes completion-rays {
+  to {
+    rotate: 360deg;
+  }
+}
+.completion-confetti span {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: completion-confetti linear infinite;
+}
+@keyframes completion-confetti {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  to {
+    translate: 40px 520px;
+    rotate: 720deg;
+  }
+}
+.completion-actors.forest-scene {
+  aspect-ratio: auto;
+  background: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+  height: 210px;
+}
+.completion-actors .forest-actor {
+  position: relative;
+  transform-origin: 50% 100%;
+}
+.completion-actors .forest-actor svg {
+  display: block;
+  height: 190px;
+  width: auto;
+}
+.completion-actors .hare svg {
+  height: 220px;
+}
+.completion-actors .hare {
+  animation-delay: 0.2s;
+}
+.completion-emoji {
+  font-size: 4rem;
+}
+.completion-title {
+  margin: 12px 0 6px;
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  color: #fffaf0;
+  text-shadow: 0 4px 0 #4a3728, 0 10px 30px rgb(0 0 0 / 35%);
+  animation: completion-title 900ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+@keyframes completion-title {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+.completion-moral {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-weight: 700;
+  font-style: italic;
+  color: #fff4c2;
+}
+.reward-badge {
+  width: min(100%, 380px);
+  padding: 22px 24px 24px;
+  border-radius: 28px;
+  background: linear-gradient(160deg, #fff4c2 0%, #f5bf72 60%, #e8a93c 100%);
+  box-shadow: 0 0 0 4px #fffaf0, 0 18px 40px rgb(138 90 20 / 35%);
+  animation: badge-in 900ms 300ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+.reward-badge h3 {
+  margin: 8px 0 4px;
+  font-size: 1.6rem;
+  color: #5a3d22;
+}
+.reward-badge p {
+  margin: 0;
+  color: #5a3d22;
+}
+.reward-badge__medal {
+  position: relative;
+  width: 96px;
+  height: 116px;
+  margin: 0 auto;
+  transform-origin: 50% 0;
+  animation: medal-swing 2.6s 1.2s ease-in-out infinite;
+}
+.reward-badge__ribbon {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 44px;
+  height: 46px;
+  translate: -50% 0;
+  background: linear-gradient(90deg, #e8775f 0 50%, #7fb8de 50%);
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 50% 80%, 20% 100%);
+}
+.reward-badge__disc {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 78px;
+  height: 78px;
+  translate: -50% 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 42px;
+  color: #fffaf0;
+  background: radial-gradient(circle at 35% 30%, #fff4c2, #f5bf72 45%, #c98a22);
+  box-shadow: inset 0 0 0 5px rgb(255 255 255 / 45%), 0 6px 14px rgb(138 90 20 / 45%);
+  text-shadow: 0 2px 0 #a8711c;
+}
+@keyframes badge-in {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    rotate: -12deg;
+  }
+}
+@keyframes medal-swing {
+  0%,
+  100% {
+    rotate: -6deg;
+  }
+  50% {
+    rotate: 6deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .completion *,
+  .completion-stage * {
+    animation: none !important;
+  }
+  .completion-confetti {
+    display: none;
+  }
+}

@@ -13,12 +13,18 @@
   --color-honey-dark: #c98f2e;
   --color-sky-dark: #3f84ab;
 
-  --color-bg: var(--color-cream);
-  --color-text: var(--color-cocoa-dark);
-  --color-text-muted: #7a6753;
-  --color-surface: #ffffff;
-  --color-border: #e3d8bd;
-  --color-focus-ring: var(--color-sky-dark);
+  /* Cosmic dark theme: deep night sky with starlight text and glowing accents. */
+  --color-bg: #0b0f2e;
+  --color-text: #eef0ff;
+  --color-heading: #f6f3ff;
+  --color-text-muted: #b4bbe3;
+  --color-surface: rgb(24 26 66 / 78%);
+  --color-border: rgb(150 170 255 / 24%);
+  --color-focus-ring: #7fd8ff;
+  --color-cyan: #59d6ff;
+  --color-violet: #9b7bff;
+  --color-magenta: #ff5fc8;
+  --color-gold: #ffd36e;
   --color-danger: #c75c4a;
   --color-success: var(--color-sage-dark);
 

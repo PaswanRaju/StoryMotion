@@ -1,50 +1,79 @@
+import type { PointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { Sparkles } from 'lucide-react';
 import { routes } from '../../app/router';
+import { StoryCover } from '../art/StoryArt';
+import { GestureHint } from '../player/GestureHint';
+import { SolarSystem } from '../art/SolarSystem';
+import './home.css';
 
 type HeroProps = {
   onHowItWorks: () => void;
 };
 
+/** Gentle pointer parallax via CSS variables (no re-render). */
+function parallax(event: PointerEvent<HTMLElement>) {
+  const el = event.currentTarget;
+  const box = el.getBoundingClientRect();
+  el.style.setProperty('--px', `${(event.clientX - box.left) / box.width - 0.5}`);
+  el.style.setProperty('--py', `${(event.clientY - box.top) / box.height - 0.5}`);
+}
+
 export function Hero({ onHowItWorks }: HeroProps) {
   const navigate = useNavigate();
 
   return (
-    <section
-      style={{
-        borderRadius: 'var(--radius-lg)',
-        background:
-          'linear-gradient(135deg, var(--color-sky) 0%, var(--color-sage) 50%, var(--color-honey) 100%)',
-        padding: 'var(--space-8) var(--space-6)',
-        textAlign: 'center',
-        color: 'var(--color-cocoa-dark)',
-      }}
-    >
-      <p
-        aria-hidden="true"
-        style={{ fontSize: '3rem', margin: 0 }}
-      >
-        📖🐢🐰
-      </p>
-      <h1>StoryMotion</h1>
-      <p style={{ fontSize: 'var(--fs-md)', maxWidth: '560px', margin: '0 auto var(--space-5)' }}>
-        An interactive storybook where kids move to bring the story to life —
-        jump, squat, march, and reach your way through magical tales.
-      </p>
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <PrimaryButton onClick={() => navigate(routes.library())}>
-          Start Adventure
-        </PrimaryButton>
-        <PrimaryButton variant="ghost" onClick={onHowItWorks}>
-          How It Works
-        </PrimaryButton>
+    <section className="hero" onPointerMove={parallax}>
+      <div className="hero__copy">
+        <p className="hero__eyebrow">
+          <Sparkles size={16} aria-hidden="true" /> Interactive stories from the galaxy
+        </p>
+        <h1 className="hero__title">StoryMotion</h1>
+        <p className="hero__tagline">
+          Move. Imagine. <span>Explore the story through motion.</span>
+        </p>
+        <p className="hero__lede">
+          Watch a magical tale come to life — then spread your arms, lean, or
+          raise a hand, and watch the characters react to <em>you</em>. No
+          camera? Just tap.
+        </p>
+        <div className="hero__actions">
+          <button
+            type="button"
+            className="hero__cta"
+            data-sfx="start"
+            onClick={() => navigate(routes.library())}
+          >
+            Start Adventure
+          </button>
+          <button type="button" className="hero__ghost" onClick={onHowItWorks}>
+            How It Works
+          </button>
+        </div>
+        <ul className="hero__chips" aria-label="Highlights">
+          <li>🎬 Plays like a cartoon</li>
+          <li>🙌 Gesture magic</li>
+          <li>🔒 Camera stays on your device</li>
+        </ul>
+      </div>
+      <div className="hero__stage" aria-hidden="true">
+        <div className="hero__solar">
+          <SolarSystem />
+        </div>
+        <div className="hero__window">
+          <StoryCover storyId="hare" />
+          <div className="hero__shield" />
+        </div>
+        <div className="hero__float hero__float--gesture">
+          <GestureHint gesture="ARMS_WIDE" />
+          <span>
+            <strong>Spread your arms</strong>
+            magic shield!
+          </span>
+        </div>
+        <div className="hero__float hero__float--badge">
+          <span className="hero__live-dot" /> Camera magic ready
+        </div>
       </div>
     </section>
   );

@@ -7,6 +7,8 @@ export type NarrationPanelProps = {
   onReplay: () => void;
   onContinue?: () => void;
   accent?: string;
+  /** 'subtitle': movie-style caption bar under a cinematic scene. */
+  variant?: 'card' | 'subtitle';
 };
 
 /**
@@ -21,7 +23,28 @@ export function NarrationPanel({
   onReplay,
   onContinue,
   accent = 'var(--color-surface)',
+  variant = 'card',
 }: NarrationPanelProps) {
+  if (variant === 'subtitle')
+    return (
+      <div className="subtitle-bar">
+        <span className="subtitle-bar__speaker">{speaker}</span>
+        <p className="subtitle-bar__text" aria-live="polite">
+          <span key={text} className="narration-line">
+            {text}
+          </span>
+        </p>
+        <button
+          type="button"
+          className="subtitle-bar__replay"
+          onClick={onReplay}
+          aria-label="Replay narration"
+          title="Hear it again"
+        >
+          <RotateCcw size={20} aria-hidden="true" />
+        </button>
+      </div>
+    );
   return (
     <div
       className="card"
@@ -37,7 +60,9 @@ export function NarrationPanel({
         {speaker}
       </span>
       <p style={{ margin: 0, fontSize: 'var(--fs-md)' }} aria-live="polite">
-        {text}
+        <span key={text} className="narration-line">
+          {text}
+        </span>
       </p>
       <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
         <button

@@ -21,9 +21,10 @@ export function CharacterSelectPage() {
     : false;
 
   return (
-    <section>
+    <section className="character-select">
+      <p className="eyebrow">{story.title}</p>
       <h2>Choose Your Character</h2>
-      <p>{story.title}</p>
+      <p className="character-select__sub">Who will you cheer for on this adventure?</p>
 
       {mode === 'family' && (
         <p
@@ -40,6 +41,7 @@ export function CharacterSelectPage() {
       )}
 
       <CharacterPicker
+        storyId={story.id}
         characters={story.characters}
         selectedId={selectedValid ? characterId : null}
         onSelect={setCharacterId}
@@ -56,8 +58,9 @@ export function CharacterSelectPage() {
           Back
         </PrimaryButton>
         <PrimaryButton
+          data-sfx="start"
           disabled={!selectedValid}
-          onClick={() => navigate(routes.cameraSetup(story.id))}
+          onClick={() => navigate(routes.player(story.id))}
         >
           Let's Go
         </PrimaryButton>
