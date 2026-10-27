@@ -219,11 +219,17 @@
   animation: invite-almost-pulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes invite-almost-pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .invite-almost { animation: none; }
+  .invite-almost {
+    animation: none;
+  }
 }
 
 /* ======================================================================
@@ -260,7 +266,9 @@
   background: #fffaf0;
   border: 2px solid #e6d8bd;
   box-shadow: 0 3px 0 #e6d8bd;
-  transition: translate 120ms ease, box-shadow 120ms ease;
+  transition:
+    translate 120ms ease,
+    box-shadow 120ms ease;
 }
 .automatic-player .player-toolbar__btn:hover {
   translate: 0 -1px;
@@ -277,7 +285,11 @@
   padding: 12px 12px 0;
   border-radius: 30px;
   background:
-    radial-gradient(120% 70% at 50% 0%, rgb(255 211 110 / 14%), transparent 60%),
+    radial-gradient(
+      120% 70% at 50% 0%,
+      rgb(255 211 110 / 14%),
+      transparent 60%
+    ),
     linear-gradient(180deg, #24364a 0%, #18222f 100%);
   box-shadow:
     0 28px 60px -24px rgb(20 28 39 / 70%),
@@ -359,7 +371,9 @@
   background: rgb(255 255 255 / 10%);
   color: #fffaf0;
   cursor: pointer;
-  transition: background 150ms ease, rotate 300ms ease;
+  transition:
+    background 150ms ease,
+    rotate 300ms ease;
 }
 .subtitle-bar__replay:hover {
   background: rgb(255 255 255 / 20%);
@@ -730,4 +744,93 @@
 .automatic-player .magic-invitation.is-quiet {
   opacity: 0;
   pointer-events: none;
+}
+/* Ghost demonstrations keep one clear move per prompt. */
+.gesture-hint__body {
+  opacity: 0.85;
+}
+.gesture-hint--lean-left .gesture-hint__body {
+  animation: hint-lean-left 2s ease-in-out infinite;
+}
+.gesture-hint--lean-right .gesture-hint__body {
+  animation: hint-lean-right 2s ease-in-out infinite;
+}
+.gesture-hint--climb .gesture-hint__arm--left {
+  animation: hint-raise 1.2s ease-in-out infinite;
+}
+.gesture-hint--climb .gesture-hint__arm--right {
+  animation: hint-raise 1.2s 0.6s ease-in-out infinite;
+}
+.gesture-hint--clap .gesture-hint__arm--left {
+  animation: hint-clap-left 1.5s ease-in-out infinite;
+}
+.gesture-hint--clap .gesture-hint__arm--right {
+  animation: hint-clap-right 1.5s ease-in-out infinite;
+}
+.gesture-hint--run-in-place .gesture-hint__body {
+  animation: hint-hop 1s ease-in-out infinite;
+}
+.gesture-hint--blow .gesture-hint__head {
+  animation: hint-puff 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.gesture-hint--crouch .gesture-hint__body {
+  animation: hint-crouch 2s ease-in-out infinite;
+}
+@keyframes hint-lean-left {
+  35%,
+  65% {
+    rotate: -14deg;
+  }
+}
+@keyframes hint-lean-right {
+  35%,
+  65% {
+    rotate: 14deg;
+  }
+}
+@keyframes hint-clap-left {
+  35%,
+  65% {
+    rotate: -65deg;
+  }
+}
+@keyframes hint-clap-right {
+  35%,
+  65% {
+    rotate: 65deg;
+  }
+}
+@keyframes hint-hop {
+  50% {
+    translate: 0 -8px;
+  }
+}
+@keyframes hint-puff {
+  40%,
+  65% {
+    scale: 1.15 1;
+  }
+}
+@keyframes hint-crouch {
+  35%,
+  65% {
+    scale: 1 0.7;
+  }
+}
+[data-anticipation='watching'] .jack {
+  filter: brightness(1.05);
+}
+[data-anticipation='excited'] .jack {
+  filter: drop-shadow(0 0 10px #fef08a);
+}
+.is-anticipating .char-eye,
+.is-anticipating .sb-blink {
+  translate: -2px 0;
+  transition: translate 180ms ease;
+}
+.is-excited .tt-head,
+.is-excited .sb-jack {
+  filter: drop-shadow(0 0 9px #fde68a);
 }

@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { PrimaryButton } from '../layout/PrimaryButton';
 
 export type NarrationPanelProps = {
+  language?: 'en' | 'es';
+  getCharIndex?: () => number;
   speaker: string;
   text: string;
   onReplay: () => void;
@@ -19,19 +22,27 @@ export type NarrationPanelProps = {
  */
 export function NarrationPanel({
   speaker,
+  getCharIndex,
+  language = 'en',
   text,
   onReplay,
   onContinue,
   accent = 'var(--color-surface)',
   variant = 'card',
 }: NarrationPanelProps) {
+  const [charIndex, setCharIndex] = useState(-1);
+  useEffect(() => {
+    if (!getCharIndex) return;
+    const timer = setInterval(() => setCharIndex(getCharIndex()), 80);
+    return () => clearInterval(timer);
+  }, [getCharIndex]);
   if (variant === 'subtitle')
     return (
       <div className="subtitle-bar">
         <span className="subtitle-bar__speaker">{speaker}</span>
-        <p className="subtitle-bar__text" aria-live="polite">
+        <p className="subtitle-bar__text" lang={language} aria-live="polite">
           <span key={text} className="narration-line">
-            {text}
+            <CaptionWords text={text} charIndex={charIndex} />
           </span>
         </p>
         <button
@@ -48,7 +59,12 @@ export function NarrationPanel({
   return (
     <div
       className="card"
-      style={{ background: accent, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}
+      style={{
+        background: accent,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-2)',
+      }}
     >
       <span
         style={{
@@ -61,10 +77,16 @@ export function NarrationPanel({
       </span>
       <p style={{ margin: 0, fontSize: 'var(--fs-md)' }} aria-live="polite">
         <span key={text} className="narration-line">
-          {text}
+          <CaptionWords text={text} charIndex={charIndex} />
         </span>
       </p>
-      <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 'var(--space-3)',
+          justifyContent: 'flex-end',
+        }}
+      >
         <button
           type="button"
           className="btn btn--ghost btn--small"
@@ -81,5 +103,36 @@ export function NarrationPanel({
         )}
       </div>
     </div>
+  );
+}
+
+function CaptionWords({
+  text,
+  charIndex,
+}: {
+  text: string;
+  charIndex: number;
+}) {
+  const words = [...text.matchAll(/\S+/g)];
+  const active = words.findLastIndex((word) => word.index <= charIndex);
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {words.map((word, index) => (
+          <span
+            key={word.index}
+            className={
+              index === active && charIndex >= 0
+                ? 'caption-word is-current'
+                : 'caption-word'
+            }
+          >
+            {word[0]}
+            {index < words.length - 1 ? ' ' : ''}
+          </span>
+        ))}
+      </span>
+    </>
   );
 }

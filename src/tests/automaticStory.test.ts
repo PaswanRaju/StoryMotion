@@ -23,7 +23,11 @@ const advance = (state: AutomaticStoryState, ms: number) => {
 /** Advance until story time reaches `elapsed` (or an invitation opens on the way). */
 const until = (state: AutomaticStoryState, elapsed: number) => {
   let next = state;
-  while (next.elapsed < elapsed && next.interaction !== 'open' && !next.finished)
+  while (
+    next.elapsed < elapsed &&
+    next.interaction !== 'open' &&
+    !next.finished
+  )
     next = reduce(next, tick(200));
   return next;
 };
@@ -51,8 +55,8 @@ describe('automatic story timeline', () => {
     }
     state = advance(state, STORY_DURATION_MS);
     expect(state.finished).toBe(true);
-    expect(state.responses).toEqual([null, null, null]);
-    expect(state.auto).toEqual([true, true, true]);
+    expect(state.responses).toEqual(MOMENTS.map(() => null));
+    expect(state.auto).toEqual(MOMENTS.map(() => true));
     expect(state.magic).toBe(false);
   });
 
@@ -68,8 +72,12 @@ describe('automatic story timeline', () => {
     state = until(state, BOOST.startMs);
     expect(reduce(state, { type: 'LEAN_RIGHT' })).toBe(state);
     state = reduce(state, { type: 'MAGIC_ACTIVATE' });
-    expect(state.responses).toEqual(['ARMS_WIDE', 'LEAN_LEFT', 'HAND_RAISE']);
-    expect(state.auto).toEqual([false, false, false]);
+    expect(state.responses.slice(0, 3)).toEqual([
+      'ARMS_WIDE',
+      'LEAN_LEFT',
+      'HAND_RAISE',
+    ]);
+    expect(state.auto).toEqual(MOMENTS.map(() => false));
     expect(state.magic).toBe(true);
   });
 
@@ -92,12 +100,12 @@ describe('automatic story timeline', () => {
     expect(reduce(paused, tick(5000))).toBe(paused);
     expect(reduce(paused, { type: 'ARMS_WIDE' })).toBe(paused);
     state = reduce(state, { type: 'ARMS_WIDE' });
-    expect(state.responses).toEqual(['ARMS_WIDE', null, null]);
+    expect(state.responses.slice(0, 3)).toEqual(['ARMS_WIDE', null, null]);
     expect(state.gesture).toBe('ARMS_WIDE');
     expect(reduce(state, { type: 'ARMS_WIDE' })).toBe(state);
     const restarted = reduce(state, { type: 'RESTART' });
-    expect(restarted.responses).toEqual([null, null, null]);
-    expect(restarted.auto).toEqual([false, false, false]);
+    expect(restarted.responses).toEqual(MOMENTS.map(() => null));
+    expect(restarted.auto).toEqual(MOMENTS.map(() => false));
     expect(restarted.magic).toBe(false);
   });
 
@@ -133,7 +141,7 @@ describe('automatic story timeline', () => {
     expect(state.auto[0]).toBe(true);
     state = advance(state, STORY_DURATION_MS);
     expect(state.finished).toBe(true);
-    expect(state.responses).toEqual([null, null, null]);
+    expect(state.responses).toEqual(MOMENTS.map(() => null));
   });
 
   it('gives a late deferred invitation its full window, still ending on time', () => {
@@ -146,8 +154,12 @@ describe('automatic story timeline', () => {
     state = advance(state, BOOST.windowMs - 400);
     expect(state.interaction).toBe('open');
     state = advance(state, 600);
-    expect(state.interaction).toBe('done');
-    state = advance(state, STORY_DURATION_MS - state.elapsed);
+    expect(state.moment).toBe(3);
+    expect(state.interaction).toBe('open'); // the new clap/cheer moment now gets its own window
+    state = advance(
+      state,
+      STORY_DURATION_MS - state.elapsed + MOMENTS[3].windowMs + 1000,
+    );
     expect(state.finished).toBe(true);
   });
 });

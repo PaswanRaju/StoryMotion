@@ -5,6 +5,10 @@ import { CharacterSelectPage } from '../components/characters/CharacterSelectPag
 import { CameraSetupPage } from '../components/camera/CameraSetupPage';
 import { StoryPlayerPage } from '../components/player/StoryPlayerPage';
 import { CompletionPage } from '../components/completion/CompletionPage';
+import { StoryGeneratorPage } from '../generation/StoryGeneratorPage';
+import { StoryCreatorPage } from '../creator/StoryCreatorPage';
+import { SavedCompletionPage } from '../platform/CompletionRecap';
+import { SavedStoryPage } from '../platform/SavedStoryPage';
 import { App } from './App';
 
 /** Route path builders — keep every navigation call typed through these,
@@ -24,6 +28,21 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'parent/create', element: <StoryGeneratorPage /> },
+      { path: 'parent/editor', element: <StoryCreatorPage /> },
+      { path: 'my-stories/:id/play', element: <SavedStoryPage /> },
+      { path: 'my-stories/:id/complete', element: <SavedCompletionPage /> },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'dev/gesture-fixtures',
+              lazy: async () => ({
+                Component: (await import('../gestures/dev/FixtureRecorderPage'))
+                  .FixtureRecorderPage,
+              }),
+            },
+          ]
+        : []),
       { path: 'library', element: <StoryLibraryPage /> },
       { path: 'library/:storyId/characters', element: <CharacterSelectPage /> },
       { path: 'library/:storyId/camera', element: <CameraSetupPage /> },

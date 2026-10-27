@@ -24,7 +24,9 @@ export function CharacterSelectPage() {
     <section className="character-select">
       <p className="eyebrow">{story.title}</p>
       <h2>Choose Your Character</h2>
-      <p className="character-select__sub">Who will you cheer for on this adventure?</p>
+      <p className="character-select__sub">
+        Who will you cheer for on this adventure?
+      </p>
 
       {mode === 'family' && (
         <p
@@ -54,13 +56,16 @@ export function CharacterSelectPage() {
           marginTop: 'var(--space-6)',
         }}
       >
-        <PrimaryButton variant="ghost" onClick={() => navigate(routes.library())}>
+        <PrimaryButton
+          variant="ghost"
+          onClick={() => navigate(routes.library())}
+        >
           Back
         </PrimaryButton>
         <PrimaryButton
           data-sfx="start"
           disabled={!selectedValid}
-          onClick={() => navigate(routes.player(story.id))}
+          onClick={() => navigate(routes.cameraSetup(story.id))}
         >
           Let's Go
         </PrimaryButton>

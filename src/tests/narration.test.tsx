@@ -1,6 +1,12 @@
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { createNarrator } from '../audio/narrator';
 import { narrator } from '../audio/narrator';
@@ -69,7 +75,10 @@ describe('narrator controller', () => {
     n.setPaused(true);
     expect(synth.cancel).toHaveBeenCalled();
     n.setPaused(false);
-    expect(synth.texts()).toEqual(['Hare raced ahead quickly.', 'ahead quickly.']);
+    expect(synth.texts()).toEqual([
+      'Hare raced ahead quickly.',
+      'ahead quickly.',
+    ]);
   });
   it('does not respeak a finished line on resume or unmute', () => {
     n.setLine('a', 'Done.');
@@ -187,7 +196,10 @@ describe('story player narration', () => {
     const router = createMemoryRouter(
       [
         { path: '/library/:storyId/play', element: <StoryPlayerPage /> },
-        { path: '/library/:storyId/complete', element: <h1>Story complete</h1> },
+        {
+          path: '/library/:storyId/complete',
+          element: <h1>Story complete</h1>,
+        },
       ],
       { initialEntries: [`/library/${storyId}/play`] },
     );
@@ -212,15 +224,15 @@ describe('story player narration', () => {
   it('narrates each beat exactly once, in order, during normal playback', () => {
     renderPlayer();
     // No input: three held invitations resolve themselves along the way.
-    for (let second = 0; second < 80; second++) advance(1000);
+    for (let second = 0; second < 90; second++) advance(1000);
     const spoken = synth.texts();
     expect(spoken.filter((text) => beats.includes(text))).toEqual([...beats]);
     // Plus exactly one gentle reaction per resolved moment, never a repeated beat.
-    expect(spoken).toHaveLength(beats.length + 3);
+    expect(spoken).toHaveLength(beats.length + MOMENTS.length * 2); // a narrated prompt and reaction per moment
     expect(screen.getByText('Story complete')).toBeInTheDocument();
     vi.runOnlyPendingTimers();
     expect(synth.cancel).toHaveBeenCalled(); // leaving the player silences it
-  }, 20000); // renders a whole 80 s playthrough; slow machines need headroom
+  }, 20000); // renders a whole 90 s playthrough; slow machines need headroom
   it.each(['beanstalk', 'pigs'] as const)(
     'narrates every %s scene exactly once, in story order, with no input',
     (storyId) => {
@@ -240,7 +252,9 @@ describe('story player narration', () => {
     advance(3000); // paused: no ticks, no speech
     fireEvent.click(screen.getByRole('button', { name: 'Resume' }));
     // No boundary events from the fake voice: resumes near "(a) sunny forest…".
-    expect(synth.texts().at(-1)).toMatch(/^(a )?sunny forest, lived a speedy Hare/);
+    expect(synth.texts().at(-1)).toMatch(
+      /^(a )?sunny forest, lived a speedy Hare/,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Mute narration' }));
     fireEvent.click(screen.getByRole('button', { name: 'Unmute narration' }));
     for (let second = 0; second < SHIELD_S - 2; second++) advance(1000);
@@ -268,7 +282,9 @@ describe('story player narration', () => {
     fireEvent.click(screen.getByText('Synthetic ARMS_WIDE'));
     fireEvent.click(screen.getByRole('button', { name: 'Unmute narration' }));
     advance(1000);
-    expect(synth.texts().some((text) => text.includes('magic shield'))).toBe(false);
+    expect(
+      synth.texts().some((text) => text.includes('Wow! A magic shield!')),
+    ).toBe(false);
   });
   it('speaks again only on intentional replay or restart', () => {
     renderPlayer();

@@ -91,8 +91,9 @@ const LAYERS = [
 ] as const;
 const random = (a: number, b: number) => a + Math.random() * (b - a);
 const reducedMotionQuery = () =>
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.documentElement.dataset.reducedMotion === 'true' ||
+  (typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 /**
  * Cinematic Tortoise and the Hare scene. React renders states 5×/s from story time;
@@ -123,7 +124,13 @@ export function ForestRaceScene({
   const crowds = useRef<(HTMLDivElement | null)[]>([]);
   const canvas = useRef<HTMLCanvasElement>(null);
   const pixelRatio = useRef(1);
-  const clock = useRef({ base: 0, at: 0, paused: false, holding: false, shown: 0 });
+  const clock = useRef({
+    base: 0,
+    at: 0,
+    paused: false,
+    holding: false,
+    shown: 0,
+  });
   const live = useRef<Live>({
     effects: [],
     boostAt: null,
@@ -137,7 +144,10 @@ export function ForestRaceScene({
   // Record the story time at which each moment resolved (adjusting state during render).
   const answers = outcomes ?? [gesture];
   const key = answers.join('|');
-  const [fx, setFx] = useState<{ key: string; list: Reaction[] }>({ key: '', list: [] });
+  const [fx, setFx] = useState<{ key: string; list: Reaction[] }>({
+    key: '',
+    list: [],
+  });
   if (fx.key !== key)
     setFx({
       key,
@@ -149,7 +159,8 @@ export function ForestRaceScene({
                 outcome,
                 at:
                   fx.list.find(
-                    (e) => e.moment === MOMENTS[index].id && e.outcome === outcome,
+                    (e) =>
+                      e.moment === MOMENTS[index].id && e.outcome === outcome,
                   )?.at ?? elapsed,
               },
             ]
@@ -200,11 +211,19 @@ export function ForestRaceScene({
     if (recent.outcome === 'auto')
       return recent.moment === 'shield' && hareChosen ? ' fx-crouch' : '';
     // The Tortoise's reactions are states; the Hare (as hero) gets a happy hop.
-    return hareChosen ? ' fx-react' : recent.moment === 'path' ? ` fx-react${looking}` : '';
+    return hareChosen
+      ? ' fx-react'
+      : recent.moment === 'path'
+        ? ` fx-react${looking}`
+        : '';
   };
   const pop = (chosen: boolean) =>
     chosen && recent ? (
-      <div key={`${recent.moment}${recent.at}`} className="actor-pop" aria-hidden="true">
+      <div
+        key={`${recent.moment}${recent.at}`}
+        className="actor-pop"
+        aria-hidden="true"
+      >
         {popWord(recent)}
       </div>
     ) : null;
@@ -259,10 +278,16 @@ export function ForestRaceScene({
       return cam;
     };
     const emit = (t: number, dt: number) => {
-      const { effects, boostAt: boost, windUntil: windEnd, reduced } = live.current;
+      const {
+        effects,
+        boostAt: boost,
+        windUntil: windEnd,
+        reduced,
+      } = live.current;
       const cam = view(t);
       const amount = reduced ? 0.3 : 1;
-      const chance = (perSecond: number) => Math.random() < perSecond * dt * amount;
+      const chance = (perSecond: number) =>
+        Math.random() < perSecond * dt * amount;
       if (!reduced && chance(6))
         field.add('pollen', random(0, VIEW.width), random(300, 1000), {
           vx: random(-15, 15),
@@ -280,7 +305,12 @@ export function ForestRaceScene({
           color: '#d9bf8f',
         });
       if (boost !== null && t >= boost && t < boost + BOOST_MS)
-        createMagicTrail(field, { x: tortoiseX(t, boost), y: LANES.tortoise - 75 }, dt, amount);
+        createMagicTrail(
+          field,
+          { x: tortoiseX(t, boost), y: LANES.tortoise - 75 },
+          dt,
+          amount,
+        );
       if (t < windEnd && chance(38))
         field.add('leaf', cam.x + VIEW.width + 40, random(600, 900), {
           vx: -random(700, 1100),
@@ -296,12 +326,20 @@ export function ForestRaceScene({
         fired.add(id);
         const p = chosenPoint(t);
         if (e.outcome === 'auto') {
-          if (e.moment === 'path') pathHighlight(field, p, true, cam.x, VIEW.width, amount * 0.5);
+          if (e.moment === 'path')
+            pathHighlight(field, p, true, cam.x, VIEW.width, amount * 0.5);
           continue;
         }
         if (e.moment === 'shield') activateShield(field, p, amount);
         else if (e.moment === 'path')
-          pathHighlight(field, p, e.outcome === 'LEAN_RIGHT', cam.x, VIEW.width, amount);
+          pathHighlight(
+            field,
+            p,
+            e.outcome === 'LEAN_RIGHT',
+            cam.x,
+            VIEW.width,
+            amount,
+          );
         else boostBurst(field, p, amount);
       }
       if (!fired.has('finish') && tortoiseX(t, boost) >= MARKS.finish) {
@@ -341,8 +379,16 @@ export function ForestRaceScene({
       const put = (el: HTMLDivElement | null, x: number, y: number) => {
         if (el) el.style.transform = `translate3d(${x - cam.x}px,${y}px,0)`;
       };
-      put(fork.current, MARKS.fork + FORK_BOX.x, LANES.tortoise - 105 + FORK_BOX.y);
-      put(tortoise.current, tortoiseX(t, boost) + TORTOISE_BOX.x, LANES.tortoise + TORTOISE_BOX.y);
+      put(
+        fork.current,
+        MARKS.fork + FORK_BOX.x,
+        LANES.tortoise - 105 + FORK_BOX.y,
+      );
+      put(
+        tortoise.current,
+        tortoiseX(t, boost) + TORTOISE_BOX.x,
+        LANES.tortoise + TORTOISE_BOX.y,
+      );
       put(hare.current, hareX(t) + HARE_BOX.x, LANES.hare + HARE_BOX.y);
       put(crowds.current[0], MARKS.tortoiseStart - 330, 700);
       put(crowds.current[1], MARKS.finish + 190, 700);
@@ -357,13 +403,21 @@ export function ForestRaceScene({
       if (running) {
         emit(t, dt);
         const shield = effects.find(
-          (e) => e.moment === 'shield' && e.outcome === 'ARMS_WIDE' && t < e.at + SHIELD_MS,
+          (e) =>
+            e.moment === 'shield' &&
+            e.outcome === 'ARMS_WIDE' &&
+            t < e.at + SHIELD_MS,
         );
         let zone: ShieldZone = null;
         if (shield)
           zone = h
             ? { x: hareX(t) + 20, y: LANES.hare - 130, rx: 175, ry: 170 }
-            : { x: tortoiseX(t, boost) + 30, y: LANES.tortoise - 95, rx: 200, ry: 150 };
+            : {
+                x: tortoiseX(t, boost) + 30,
+                y: LANES.tortoise - 95,
+                rx: 200,
+                ry: 150,
+              };
         field.update(dt, zone);
       }
       last = t;
@@ -380,9 +434,12 @@ export function ForestRaceScene({
     const loop = (now: number) => {
       const c = clock.current;
       const candidate =
-        c.paused || c.holding ? c.shown : Math.min(c.base + (now - c.at), c.base + 400);
+        c.paused || c.holding
+          ? c.shown
+          : Math.min(c.base + (now - c.at), c.base + 400);
       // Hold position instead of stepping back slightly when a tick lands; accept restarts.
-      const t = candidate < c.shown && c.shown - candidate < 500 ? c.shown : candidate;
+      const t =
+        candidate < c.shown && c.shown - candidate < 500 ? c.shown : candidate;
       c.shown = t;
       place(t, now, !c.paused);
       frame = requestAnimationFrame(loop);
@@ -401,7 +458,10 @@ export function ForestRaceScene({
       const scale = el.clientWidth / VIEW.width;
       if (stage.current) stage.current.style.transform = `scale(${scale})`;
       // Canvas backing store matches device pixels (capped) so particles stay crisp.
-      const k = Math.min(2, Math.max(0.5, scale * (window.devicePixelRatio || 1)));
+      const k = Math.min(
+        2,
+        Math.max(0.5, scale * (window.devicePixelRatio || 1)),
+      );
       pixelRatio.current = k;
       if (canvas.current) {
         canvas.current.width = Math.round(VIEW.width * k);
@@ -474,7 +534,9 @@ export function ForestRaceScene({
             style={{ width: HARE_BOX.w }}
           >
             <div className={`actor-lane ${hareChosen ? laneClass : ''}`}>
-              <div className={`actor-facing ${hareFacesLeft(elapsed) ? 'is-left' : ''}`}>
+              <div
+                className={`actor-facing ${hareFacesLeft(elapsed) ? 'is-left' : ''}`}
+              >
                 <Hare />
               </div>
               {hareChosen && shielded && shieldEl(-40, 30, 175, 170)}

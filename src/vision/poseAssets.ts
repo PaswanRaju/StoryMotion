@@ -7,5 +7,4 @@ export const MODEL_URL = new URL(
 ).href;
 export const FALLBACK_MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
-export const WASM_ROOT =
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/wasm';
+export const WASM_ROOT = `${import.meta.env.BASE_URL}wasm`;

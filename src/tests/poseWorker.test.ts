@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
+  faceCreate: vi.fn(),
+  handCreate: vi.fn(),
+  setOptions: vi.fn(),
   files: vi.fn(),
   create: vi.fn(),
   detect: vi.fn(),
@@ -7,6 +10,8 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock('@mediapipe/tasks-vision', () => ({
   FilesetResolver: { forVisionTasks: mocks.files },
+  FaceLandmarker: { createFromOptions: mocks.faceCreate },
+  HandLandmarker: { createFromOptions: mocks.handCreate },
   PoseLandmarker: {
     createFromOptions: mocks.create,
     POSE_CONNECTIONS: [{ start: 11, end: 12 }],
@@ -55,6 +60,7 @@ beforeEach(async () => {
   });
   mocks.create.mockResolvedValue({
     detectForVideo: mocks.detect,
+    setOptions: mocks.setOptions,
     close: mocks.close,
   });
   await import('../vision/pose.worker');
@@ -89,9 +95,10 @@ it('uses the installed API ES-module loader and VIDEO mode, then returns derived
   expect(result).not.toHaveProperty('landmarks');
 });
 it('falls back to the official model URL when the self-hosted model fails to load', async () => {
-  mocks.create
-    .mockRejectedValueOnce(new Error('404'))
-    .mockResolvedValueOnce({ detectForVideo: mocks.detect, close: mocks.close });
+  mocks.create.mockRejectedValueOnce(new Error('404')).mockResolvedValueOnce({
+    detectForVideo: mocks.detect,
+    close: mocks.close,
+  });
   await scope.onmessage!({
     data: {
       type: 'init',
@@ -163,4 +170,85 @@ it('produces transient skeleton pixels only after opt-in, excluding invisible jo
   await frame(200);
   expect(transfer).toHaveBeenCalledOnce();
   expect(scope.postMessage.mock.lastCall![0]).not.toHaveProperty('debugFrame');
+});
+
+it('skips pose inference for frames outside an interaction window and always closes the bitmap', async () => {
+  await scope.onmessage!({
+    data: { type: 'init', wasmRoot: '/wasm', modelUrl: '/model.task' },
+  });
+  await scope.onmessage!({ data: { type: 'recognition', enabled: false } });
+  const close = vi.fn();
+  await scope.onmessage!({
+    data: { type: 'frame', bitmap: { close }, at: 1000 },
+  });
+  expect(mocks.detect).not.toHaveBeenCalled();
+  expect(close).toHaveBeenCalledOnce();
+});
+
+it('exports landmarks only after explicit development recording opt-in', async () => {
+  await scope.onmessage!({
+    data: { type: 'init', wasmRoot: '/wasm', modelUrl: '/model.task' },
+  });
+  const landmarks = Array.from({ length: 33 }, () => ({
+    x: 0.5,
+    y: 0.5,
+    visibility: 1,
+  }));
+  mocks.detect.mockReturnValue({ landmarks: [landmarks] });
+  const bitmap = { width: 640, height: 480, close: vi.fn() };
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1000 } });
+  expect(scope.postMessage.mock.lastCall![0]).not.toHaveProperty(
+    'fixtureFrame',
+  );
+  await scope.onmessage!({ data: { type: 'recording', enabled: true } });
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1100 } });
+  expect(scope.postMessage.mock.lastCall![0].fixtureFrame).toEqual({
+    atMs: 1100,
+    aspectRatio: 4 / 3,
+    landmarks,
+  });
+  await scope.onmessage!({ data: { type: 'recording', enabled: false } });
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1200 } });
+  expect(scope.postMessage.mock.lastCall![0]).not.toHaveProperty(
+    'fixtureFrame',
+  );
+});
+
+it('loads hand/face models only for an interaction that needs them', async () => {
+  await scope.onmessage!({
+    data: { type: 'init', wasmRoot: '/wasm', modelUrl: '/model.task' },
+  });
+  mocks.detect.mockReturnValue({ landmarks: [] });
+  mocks.faceCreate.mockResolvedValue({
+    detectForVideo: () => ({ faceBlendshapes: [], faceLandmarks: [] }),
+    close: vi.fn(),
+  });
+  mocks.handCreate.mockResolvedValue({
+    detectForVideo: () => ({ landmarks: [] }),
+    close: vi.fn(),
+  });
+  const bitmap = { width: 640, height: 480, close: vi.fn() };
+  await scope.onmessage!({
+    data: { type: 'options', options: { allowed: ['ARMS_WIDE'] } },
+  });
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1000 } });
+  expect(mocks.faceCreate).not.toHaveBeenCalled();
+  expect(mocks.handCreate).not.toHaveBeenCalled();
+  await scope.onmessage!({
+    data: { type: 'options', options: { allowed: ['BLOW'] } },
+  });
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1200 } });
+  expect(mocks.faceCreate).toHaveBeenCalledOnce();
+  expect(mocks.handCreate).not.toHaveBeenCalled();
+  await scope.onmessage!({
+    data: { type: 'options', options: { allowed: ['CLAP'] } },
+  });
+  await scope.onmessage!({ data: { type: 'frame', bitmap, at: 1400 } });
+  expect(mocks.handCreate).toHaveBeenCalledOnce();
+  const loaders = [
+    mocks.create.mock.calls[0][0].wasmLoaderPath,
+    mocks.faceCreate.mock.calls[0][0].wasmLoaderPath,
+    mocks.handCreate.mock.calls[0][0].wasmLoaderPath,
+  ];
+  expect(new Set(loaders).size).toBe(3); // each task must re-register the SDK's consumed ModuleFactory
 });

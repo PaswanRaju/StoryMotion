@@ -3,10 +3,12 @@ import type { PosePoint } from './magicGesture';
 
 /** Transient diagnostic pixels only. Raw landmarks remain inside the pose worker. */
 export function drawPoseDebug(
-  canvas: OffscreenCanvas,
+  canvas: OffscreenCanvas | HTMLCanvasElement,
   points: readonly PosePoint[],
-): ImageBitmap | undefined {
-  const context = canvas.getContext('2d');
+  friendly = false,
+): ImageBitmap | HTMLCanvasElement | undefined {
+  const context = canvas.getContext('2d') as
+    CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
   if (!context) return;
   const visible = (point: PosePoint | undefined): point is PosePoint =>
     !!point &&
@@ -20,9 +22,11 @@ export function drawPoseDebug(
   // Mirror geometry to match the preview, keeping joint labels readable.
   const displayX = (point: PosePoint) => (1 - point.x) * canvas.width;
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.strokeStyle = '#00ffb3';
+  context.strokeStyle = friendly ? '#a5f3fc' : '#00ffb3';
+  context.shadowColor = '#67e8f9';
+  context.shadowBlur = friendly ? 12 : 0;
   context.fillStyle = '#ffdd00';
-  context.lineWidth = 3;
+  context.lineWidth = friendly ? 7 : 3;
   context.font = '12px monospace';
   for (const { start, end } of PoseLandmarker.POSE_CONNECTIONS) {
     const a = points[start],
@@ -40,7 +44,9 @@ export function drawPoseDebug(
     context.beginPath();
     context.arc(x, y, 4, 0, Math.PI * 2);
     context.fill();
-    context.fillText(String(index), x + 6, y - 6);
+    if (!friendly) context.fillText(String(index), x + 6, y - 6);
   });
-  return canvas.transferToImageBitmap();
+  return 'transferToImageBitmap' in canvas
+    ? canvas.transferToImageBitmap()
+    : canvas;
 }

@@ -33,3 +33,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Generated from pinned npm runtime packages before dev/build.
+public/wasm/
+public/rive/

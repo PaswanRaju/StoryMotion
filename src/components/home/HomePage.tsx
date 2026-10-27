@@ -1,3 +1,5 @@
+import { LibraryShelf } from '../../platform/LibraryShelf';
+import { InstallButton } from '../../platform/InstallButton';
 import { useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Hero } from './Hero';
@@ -31,6 +33,8 @@ export function HomePage() {
 
   return (
     <section className="home">
+      <InstallButton />
+      <LibraryShelf includeBuiltins />
       <Hero onHowItWorks={() => setShowHowItWorks(true)} />
 
       <ol className="home-steps" aria-label="How StoryMotion works">

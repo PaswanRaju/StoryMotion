@@ -26,6 +26,7 @@ let worker: {
 let tick: FrameRequestCallback;
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.stubGlobal('OffscreenCanvas', class {});
   track = { stop: vi.fn(), onended: null, onmute: null };
   stream = { getTracks: () => [track] } as unknown as MediaStream;
   getUserMedia = vi.fn().mockResolvedValue(stream);
@@ -210,4 +211,117 @@ it('disposes debug pixels on disable, stop, and late worker replies', async () =
   camera.stop();
   reply({ type: 'pose', event: null, tracking, debugFrame });
   expect(debugFrame.close).toHaveBeenCalledTimes(3);
+});
+
+it('gates recognition in the worker and rejects in-flight gesture replies outside windows', async () => {
+  const onAction = vi.fn();
+  const onGesture = vi.fn();
+  const camera = createPoseCamera(video, {
+    onAction,
+    onGesture,
+    onStatus: vi.fn(),
+    recognitionEnabled: false,
+  });
+  await camera.start();
+  expect(worker.postMessage).toHaveBeenLastCalledWith({
+    type: 'recognition',
+    enabled: false,
+  });
+  const tracking = {
+    landmarkCount: 33,
+    upperBody: true,
+    calibrated: true,
+    legsVisible: false,
+    crouchAvailable: false,
+    headDirection: 'forward' as const,
+  };
+  reply({ type: 'pose', event: { type: 'HAND_RAISE' }, tracking });
+  expect(onAction).not.toHaveBeenCalled();
+  expect(onGesture).not.toHaveBeenCalled();
+  camera.setRecognitionEnabled(true);
+  expect(worker.postMessage).toHaveBeenLastCalledWith({
+    type: 'recognition',
+    enabled: true,
+  });
+  reply({ type: 'pose', event: { type: 'HAND_RAISE' }, tracking });
+  expect(onAction).toHaveBeenCalledOnce();
+  camera.setRecognitionEnabled(false);
+  reply({ type: 'pose', event: { type: 'HAND_RAISE' }, tracking });
+  expect(onAction).toHaveBeenCalledOnce();
+  camera.stop();
+});
+
+it('runs zero inference outside windows, keeps the model warm, and caps active work at 18 fps', async () => {
+  const bitmap = { close: vi.fn() } as unknown as ImageBitmap;
+  const capture = vi.fn().mockResolvedValue(bitmap);
+  vi.stubGlobal('createImageBitmap', capture);
+  Object.defineProperty(video, 'readyState', { value: 4 });
+  const camera = createPoseCamera(video, {
+    onAction: vi.fn(),
+    onStatus: vi.fn(),
+    recognitionEnabled: false,
+  });
+  await camera.start();
+  reply({ type: 'ready' });
+  for (let now = 0; now < 1000; now += 10) {
+    video.currentTime = now / 1000;
+    tick(now);
+  }
+  expect(capture).not.toHaveBeenCalled();
+  vi.advanceTimersByTime(30000);
+  expect(worker.terminate).not.toHaveBeenCalled();
+  camera.setRecognitionEnabled(true);
+  const tracking = {
+    landmarkCount: 0,
+    upperBody: false,
+    calibrated: false,
+    legsVisible: false,
+    crouchAvailable: false,
+    headDirection: 'unknown' as const,
+  };
+  for (let now = 1000; now < 2000; now += 10) {
+    video.currentTime = now / 1000;
+    tick(now);
+    await Promise.resolve();
+    reply({ type: 'pose', event: null, tracking });
+  }
+  expect(capture.mock.calls.length).toBeGreaterThanOrEqual(15);
+  expect(capture.mock.calls.length).toBeLessThanOrEqual(18);
+  const count = capture.mock.calls.length;
+  camera.setRecognitionEnabled(false);
+  for (let now = 2000; now < 3000; now += 10) {
+    video.currentTime = now / 1000;
+    tick(now);
+  }
+  expect(capture).toHaveBeenCalledTimes(count);
+  camera.stop();
+});
+
+it('keeps at most one frame in flight and closes a bitmap if its window closes during capture', async () => {
+  Object.defineProperty(video, 'readyState', { value: 4 });
+  const pending = deferred<ImageBitmap>();
+  const capture = vi.fn().mockReturnValue(pending.promise);
+  vi.stubGlobal('createImageBitmap', capture);
+  const camera = createPoseCamera(video, {
+    onAction: vi.fn(),
+    onStatus: vi.fn(),
+  });
+  await camera.start();
+  reply({ type: 'ready' });
+  video.currentTime = 0.1;
+  tick(100);
+  video.currentTime = 0.2;
+  tick(200);
+  expect(capture).toHaveBeenCalledOnce();
+  camera.setRecognitionEnabled(false);
+  const close = vi.fn();
+  pending.resolve({ close } as unknown as ImageBitmap);
+  await Promise.resolve();
+  expect(close).toHaveBeenCalledOnce();
+  expect(
+    worker.postMessage.mock.calls.filter(
+      ([message]) => message.type === 'frame',
+    ),
+  ).toHaveLength(0);
+  camera.stop();
 });

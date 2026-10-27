@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useRef,
   type KeyboardEvent,
   type ReactNode,
@@ -20,7 +21,13 @@ const FOCUSABLE_SELECTOR =
  * trigger on close, and closes on Escape. Used for both the Home "How It
  * Works" modal and the in-player Pause Dialog.
  */
-export function Modal({ title, onClose, children, closeLabel = 'Close' }: ModalProps) {
+export function Modal({
+  title,
+  onClose,
+  children,
+  closeLabel = 'Close',
+}: ModalProps) {
+  const titleId = useId();
   const overlayRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -74,7 +81,7 @@ export function Modal({ title, onClose, children, closeLabel = 'Close' }: ModalP
         className="modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
       >
         <div
           style={{
@@ -83,7 +90,7 @@ export function Modal({ title, onClose, children, closeLabel = 'Close' }: ModalP
             alignItems: 'center',
           }}
         >
-          <h2 id="modal-title" style={{ marginBottom: 0 }}>
+          <h2 id={titleId} style={{ marginBottom: 0 }}>
             {title}
           </h2>
           <button

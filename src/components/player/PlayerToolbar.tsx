@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n';
 import { Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 type PlayerToolbarProps = {
@@ -17,6 +18,7 @@ export function PlayerToolbar({
   onPause,
   onRestart,
 }: PlayerToolbarProps) {
+  const { t } = useI18n();
   return (
     <div className="player-toolbar">
       <div className="player-toolbar__title">
@@ -30,20 +32,20 @@ export function PlayerToolbar({
           onClick={onToggleMute}
           aria-pressed={muted}
           data-sfx="toggle"
-          aria-label={muted ? 'Unmute narration' : 'Mute narration'}
+          aria-label={muted ? t('unmuteNarration') : t('muteNarration')}
         >
           {muted ? (
             <VolumeX size={18} aria-hidden="true" />
           ) : (
             <Volume2 size={18} aria-hidden="true" />
           )}
-          {muted ? 'Sound off' : 'Sound on'}
+          {muted ? t('soundOff') : t('soundOn')}
         </button>
         <button
           type="button"
           className="btn btn--ghost player-toolbar__btn"
           onClick={onRestart}
-          aria-label="Restart story"
+          aria-label={t('restartStory')}
         >
           <RotateCcw size={18} aria-hidden="true" /> Replay
         </button>
@@ -51,9 +53,9 @@ export function PlayerToolbar({
           type="button"
           className="btn btn--ghost player-toolbar__btn"
           onClick={onPause}
-          aria-label="Pause story"
+          aria-label={t('pauseStory')}
         >
-          <Pause size={18} aria-hidden="true" /> Pause
+          <Pause size={18} aria-hidden="true" /> {t('pause')}
         </button>
       </div>
     </div>

@@ -63,6 +63,10 @@ export type StorySfx = (typeof STORY_SFX)[number];
 
 /** UI/story sound effects switch (narration has its own toggle). */
 let enabled = true;
+let masterVolume = 0.8;
+export function setSfxVolume(value: number) {
+  masterVolume = Math.max(0, Math.min(1, value));
+}
 export function setSfxEnabled(value: boolean) {
   enabled = value;
 }
@@ -97,15 +101,23 @@ function tone(
   frequency: number,
   start: number,
   duration: number,
-  { type = 'sine', volume = 0.12, slideTo }: { type?: OscillatorType; volume?: number; slideTo?: number } = {},
+  {
+    type = 'sine',
+    volume = 0.12,
+    slideTo,
+  }: { type?: OscillatorType; volume?: number; slideTo?: number } = {},
 ) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = type;
   osc.frequency.setValueAtTime(frequency, start);
-  if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
+  if (slideTo)
+    osc.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(
+    Math.max(0.0001, volume * masterVolume),
+    start + 0.02,
+  );
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   osc.connect(gain).connect(ctx.destination);
   osc.start(start);
@@ -125,7 +137,14 @@ function noise(
     q = 1,
     volume = 0.1,
     attack = 0.02,
-  }: { type?: BiquadFilterType; frequency?: number; slideTo?: number; q?: number; volume?: number; attack?: number } = {},
+  }: {
+    type?: BiquadFilterType;
+    frequency?: number;
+    slideTo?: number;
+    q?: number;
+    volume?: number;
+    attack?: number;
+  } = {},
 ) {
   if (!noiseBuffer || noiseBuffer.sampleRate !== ctx.sampleRate) {
     noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
@@ -139,10 +158,14 @@ function noise(
   filter.type = type;
   filter.Q.value = q;
   filter.frequency.setValueAtTime(frequency, start);
-  if (slideTo) filter.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
+  if (slideTo)
+    filter.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + attack);
+  gain.gain.exponentialRampToValueAtTime(
+    Math.max(0.0001, volume * masterVolume),
+    start + attack,
+  );
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   source.connect(filter).connect(gain).connect(ctx.destination);
   source.start(start);
@@ -157,28 +180,46 @@ function storySound(ctx: AudioContext, name: StorySfx, t: number) {
       break;
     case 'sad':
       tone(ctx, 392, t, 0.35, { type: 'triangle', volume: 0.05 });
-      tone(ctx, 330, t + 0.3, 0.6, { type: 'triangle', volume: 0.05, slideTo: 294 });
+      tone(ctx, 330, t + 0.3, 0.6, {
+        type: 'triangle',
+        volume: 0.05,
+        slideTo: 294,
+      });
       break;
     case 'step':
       noise(ctx, t, 0.08, { type: 'lowpass', frequency: 500, volume: 0.06 });
-      noise(ctx, t + 0.28, 0.08, { type: 'lowpass', frequency: 450, volume: 0.05 });
+      noise(ctx, t + 0.28, 0.08, {
+        type: 'lowpass',
+        frequency: 450,
+        volume: 0.05,
+      });
       break;
     case 'sparkle':
-      [1568, 2093, 2637, 3136].forEach((f, i) => tone(ctx, f, t + i * 0.06, 0.35, { volume: 0.03 }));
+      [1568, 2093, 2637, 3136].forEach((f, i) =>
+        tone(ctx, f, t + i * 0.06, 0.35, { volume: 0.03 }),
+      );
       break;
     case 'door':
       noise(ctx, t, 0.12, { type: 'lowpass', frequency: 300, volume: 0.12 });
       tone(ctx, 110, t, 0.18, { type: 'triangle', volume: 0.1, slideTo: 70 });
       break;
     case 'whoosh':
-      noise(ctx, t, 0.7, { frequency: 400, slideTo: 2400, q: 0.8, volume: 0.08, attack: 0.25 });
+      noise(ctx, t, 0.7, {
+        frequency: 400,
+        slideTo: 2400,
+        q: 0.8,
+        volume: 0.08,
+        attack: 0.25,
+      });
       break;
     case 'thump':
       tone(ctx, 90, t, 0.4, { volume: 0.22, slideTo: 40 });
       noise(ctx, t, 0.2, { type: 'lowpass', frequency: 220, volume: 0.12 });
       break;
     case 'flap':
-      [0, 0.09, 0.18].forEach((d) => noise(ctx, t + d, 0.07, { frequency: 1800, q: 0.7, volume: 0.05 }));
+      [0, 0.09, 0.18].forEach((d) =>
+        noise(ctx, t + d, 0.07, { frequency: 1800, q: 0.7, volume: 0.05 }),
+      );
       break;
     case 'boom':
       tone(ctx, 98, t, 0.5, { type: 'sawtooth', volume: 0.06, slideTo: 82 });
@@ -189,17 +230,33 @@ function storySound(ctx: AudioContext, name: StorySfx, t: number) {
       tone(ctx, 1976, t + 0.05, 0.9, { volume: 0.04 });
       break;
     case 'cluck':
-      [0, 0.14, 0.26].forEach((d, i) => tone(ctx, 700 + i * 120, t + d, 0.08, { type: 'square', volume: 0.03, slideTo: 500 }));
+      [0, 0.14, 0.26].forEach((d, i) =>
+        tone(ctx, 700 + i * 120, t + d, 0.08, {
+          type: 'square',
+          volume: 0.03,
+          slideTo: 500,
+        }),
+      );
       break;
     case 'yawn':
       tone(ctx, 220, t, 1.1, { type: 'sawtooth', volume: 0.035, slideTo: 140 });
       break;
     case 'snore':
-      noise(ctx, t, 0.9, { type: 'lowpass', frequency: 260, volume: 0.07, attack: 0.4 });
+      noise(ctx, t, 0.9, {
+        type: 'lowpass',
+        frequency: 260,
+        volume: 0.07,
+        attack: 0.4,
+      });
       tone(ctx, 70, t, 0.9, { type: 'sawtooth', volume: 0.03 });
       break;
     case 'gasp':
-      noise(ctx, t, 0.25, { frequency: 1400, slideTo: 2600, volume: 0.05, attack: 0.05 });
+      noise(ctx, t, 0.25, {
+        frequency: 1400,
+        slideTo: 2600,
+        volume: 0.05,
+        attack: 0.05,
+      });
       break;
     case 'roar':
       tone(ctx, 130, t, 0.6, { type: 'sawtooth', volume: 0.07, slideTo: 98 });
@@ -216,14 +273,26 @@ function storySound(ctx: AudioContext, name: StorySfx, t: number) {
       tone(ctx, 320, t, 0.12, { type: 'triangle', volume: 0.08, slideTo: 200 });
       break;
     case 'crash':
-      noise(ctx, t, 1.3, { type: 'lowpass', frequency: 1800, slideTo: 200, volume: 0.16 });
+      noise(ctx, t, 1.3, {
+        type: 'lowpass',
+        frequency: 1800,
+        slideTo: 200,
+        volume: 0.16,
+      });
       tone(ctx, 60, t, 0.9, { volume: 0.18, slideTo: 35 });
       break;
     case 'cheer':
-      [523, 659, 784, 1046].forEach((f, i) => tone(ctx, f, t + i * 0.08, 0.3, { type: 'triangle', volume: 0.06 }));
+      [523, 659, 784, 1046].forEach((f, i) =>
+        tone(ctx, f, t + i * 0.08, 0.3, { type: 'triangle', volume: 0.06 }),
+      );
       break;
     case 'rustle':
-      noise(ctx, t, 0.3, { type: 'highpass', frequency: 3000, volume: 0.04, attack: 0.08 });
+      noise(ctx, t, 0.3, {
+        type: 'highpass',
+        frequency: 3000,
+        volume: 0.04,
+        attack: 0.08,
+      });
       break;
     case 'stone':
       tone(ctx, 140, t, 0.16, { type: 'triangle', volume: 0.12, slideTo: 90 });
@@ -234,19 +303,49 @@ function storySound(ctx: AudioContext, name: StorySfx, t: number) {
       tone(ctx, 260, t + 0.02, 0.12, { type: 'triangle', volume: 0.07 });
       break;
     case 'sniff':
-      [0, 0.16].forEach((d) => noise(ctx, t + d, 0.12, { frequency: 2500, q: 1.5, volume: 0.04, attack: 0.06 }));
+      [0, 0.16].forEach((d) =>
+        noise(ctx, t + d, 0.12, {
+          frequency: 2500,
+          q: 1.5,
+          volume: 0.04,
+          attack: 0.06,
+        }),
+      );
       break;
     case 'inhale':
-      noise(ctx, t, 1.2, { frequency: 500, slideTo: 1600, q: 0.8, volume: 0.06, attack: 0.9 });
+      noise(ctx, t, 1.2, {
+        frequency: 500,
+        slideTo: 1600,
+        q: 0.8,
+        volume: 0.06,
+        attack: 0.9,
+      });
       break;
     case 'blow':
-      noise(ctx, t, 1.4, { frequency: 1400, slideTo: 300, q: 0.6, volume: 0.14, attack: 0.08 });
+      noise(ctx, t, 1.4, {
+        frequency: 1400,
+        slideTo: 300,
+        q: 0.6,
+        volume: 0.14,
+        attack: 0.08,
+      });
       break;
     case 'patter':
-      [0, 0.12, 0.24, 0.36, 0.48].forEach((d, i) => tone(ctx, i % 2 ? 300 : 340, t + d, 0.05, { type: 'triangle', volume: 0.04 }));
+      [0, 0.12, 0.24, 0.36, 0.48].forEach((d, i) =>
+        tone(ctx, i % 2 ? 300 : 340, t + d, 0.05, {
+          type: 'triangle',
+          volume: 0.04,
+        }),
+      );
       break;
     case 'stomp':
-      [0, 0.25, 0.5].forEach((d) => tone(ctx, 120, t + d, 0.15, { type: 'triangle', volume: 0.1, slideTo: 70 }));
+      [0, 0.25, 0.5].forEach((d) =>
+        tone(ctx, 120, t + d, 0.15, {
+          type: 'triangle',
+          volume: 0.1,
+          slideTo: 70,
+        }),
+      );
       break;
     case 'idea':
       tone(ctx, 988, t, 0.15, { type: 'triangle', volume: 0.06 });
@@ -260,20 +359,33 @@ function storySound(ctx: AudioContext, name: StorySfx, t: number) {
       tone(ctx, 1245, t, 0.25, { volume: 0.03 });
       break;
     case 'splash':
-      noise(ctx, t, 0.8, { type: 'highpass', frequency: 1200, slideTo: 400, volume: 0.13, attack: 0.01 });
-      [0.15, 0.3, 0.42].forEach((d, i) => tone(ctx, 900 + i * 300, t + d, 0.08, { volume: 0.03, slideTo: 1600 }));
+      noise(ctx, t, 0.8, {
+        type: 'highpass',
+        frequency: 1200,
+        slideTo: 400,
+        volume: 0.13,
+        attack: 0.01,
+      });
+      [0.15, 0.3, 0.42].forEach((d, i) =>
+        tone(ctx, 900 + i * 300, t + d, 0.08, { volume: 0.03, slideTo: 1600 }),
+      );
       break;
     case 'pop':
       tone(ctx, 600, t, 0.08, { volume: 0.05, slideTo: 1200 });
       break;
     case 'retreat':
-      [392, 370, 349, 311].forEach((f, i) => tone(ctx, f, t + i * 0.28, i === 3 ? 0.7 : 0.25, { type: 'sawtooth', volume: 0.035 }));
+      [392, 370, 349, 311].forEach((f, i) =>
+        tone(ctx, f, t + i * 0.28, i === 3 ? 0.7 : 0.25, {
+          type: 'sawtooth',
+          volume: 0.035,
+        }),
+      );
       break;
   }
 }
 
 export function playSfx(name: Sfx) {
-  if (!enabled) return;
+  if (!enabled || masterVolume === 0) return;
   const now = performance.now();
   if (now - (lastPlayed.get(name) ?? -Infinity) < MIN_GAP_MS) return;
   lastPlayed.set(name, now);
@@ -318,7 +430,10 @@ export function playSfx(name: Sfx) {
       break;
     case 'celebrate':
       [523, 659, 784, 1046, 1318].forEach((f, i) =>
-        tone(ctx, f, t + i * 0.1, i === 4 ? 0.9 : 0.25, { type: 'triangle', volume: 0.08 }),
+        tone(ctx, f, t + i * 0.1, i === 4 ? 0.9 : 0.25, {
+          type: 'triangle',
+          volume: 0.08,
+        }),
       );
       [2093, 2637, 3136].forEach((f, i) =>
         tone(ctx, f, t + 0.55 + i * 0.08, 0.4, { volume: 0.025 }),
@@ -339,7 +454,11 @@ export function playSfx(name: Sfx) {
       break;
     case 'duck':
       tone(ctx, 520, t, 0.25, { type: 'triangle', volume: 0.1, slideTo: 240 });
-      tone(ctx, 260, t + 0.45, 0.25, { type: 'triangle', volume: 0.08, slideTo: 520 });
+      tone(ctx, 260, t + 0.45, 0.25, {
+        type: 'triangle',
+        volume: 0.08,
+        slideTo: 520,
+      });
       break;
     case 'path':
       tone(ctx, 587, t, 0.2, { type: 'triangle', volume: 0.09 });
@@ -347,7 +466,10 @@ export function playSfx(name: Sfx) {
       break;
     case 'finish':
       [523, 659, 784, 1046].forEach((f, i) =>
-        tone(ctx, f, t + i * 0.13, i === 3 ? 0.8 : 0.25, { type: 'triangle', volume: 0.1 }),
+        tone(ctx, f, t + i * 0.13, i === 3 ? 0.8 : 0.25, {
+          type: 'triangle',
+          volume: 0.1,
+        }),
       );
       break;
   }
