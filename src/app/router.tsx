@@ -41,6 +41,13 @@ export const router = createBrowserRouter([
                   .FixtureRecorderPage,
               }),
             },
+            {
+              path: 'dev/ui-gallery',
+              lazy: async () => ({
+                Component: (await import('../ui/dev/UiGalleryPage'))
+                  .UiGalleryPage,
+              }),
+            },
           ]
         : []),
       { path: 'library', element: <StoryLibraryPage /> },

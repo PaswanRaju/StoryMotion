@@ -7,7 +7,8 @@ import { StoryNotFound } from '../library/StoryNotFound';
 import { useSession } from '../../app/SessionContext';
 import { routes } from '../../app/router';
 import { RewardBadge } from './RewardBadge';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { BookOpen, RotateCcw } from 'lucide-react';
+import { Button, Panel, useToast } from '../../ui';
 import { Hare, Tortoise } from '../../rendering/forest/characters';
 import '../../rendering/forest/forest.css';
 import { CompletionCast } from './CompletionCast';
@@ -34,12 +35,18 @@ export function CompletionPage() {
   const { storyId } = useParams<{ storyId: string }>();
   const navigate = useNavigate();
   const { mode, characterId, setCharacterId } = useSession();
+  const toast = useToast();
 
   const story = storyId ? getStoryById(storyId) : undefined;
   // One fanfare on arrival (sfx.ts drops StrictMode's immediate duplicate).
   useEffect(() => {
-    if (story) playSfx('celebrate');
-  }, [story]);
+    if (!story) return;
+    playSfx('celebrate');
+    toast.show('New sticker added to your collection!', {
+      icon: '🌟',
+      tone: 'magic',
+    });
+  }, [story, toast]);
   if (!story) {
     return <StoryNotFound />;
   }
@@ -110,32 +117,31 @@ export function CompletionPage() {
       />
 
       {mode === 'family' && (
-        <div
-          className="card"
-          style={{ background: 'var(--color-sky)', border: 'none' }}
-        >
+        <Panel variant="scroll" className="family-note">
           <h3>Family Reflection</h3>
-          <p style={{ margin: 0 }}>
+          <p>
             What was your favorite part of the story? Talk about it together
             before you pick the next adventure!
           </p>
-        </div>
+        </Panel>
       )}
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <PrimaryButton variant="secondary" onClick={playAgain}>
+      <div className="ui-row ui-row--center">
+        <Button
+          variant="secondary"
+          icon={<RotateCcw size={24} />}
+          onClick={playAgain}
+        >
           Play This Story Again
-        </PrimaryButton>
-        <PrimaryButton onClick={anotherStory}>
+        </Button>
+        <Button
+          size="xl"
+          sfx="start"
+          icon={<BookOpen size={28} />}
+          onClick={anotherStory}
+        >
           Choose Another Story
-        </PrimaryButton>
+        </Button>
       </div>
     </section>
   );

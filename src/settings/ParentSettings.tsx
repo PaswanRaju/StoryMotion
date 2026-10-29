@@ -2,110 +2,86 @@ import { useI18n } from '../i18n';
 import { Link } from 'react-router-dom';
 import { ParentGate } from './ParentGate';
 import { usePreferences } from './preferences';
+import { Select, Slider, Toggle } from '../ui';
+
+const TOGGLES = {
+  seated: 'seated',
+  captions: 'captions',
+  reducedMotion: 'reducedMotion',
+  camera: 'cameraAllowed',
+  classroom: 'classroom',
+  coop: 'coop',
+} as const;
+
+const closeParent = () =>
+  window.dispatchEvent(new Event('storymotion-parent-close'));
+
 export function ParentSettings() {
   const { t } = useI18n();
   const { settings: s, update } = usePreferences();
   return (
     <ParentGate label={t('parent')}>
       <div className="parent-settings">
-        <label>
-          {t('speed')}{' '}
-          <input
-            type="range"
-            min="0.6"
-            max="1.4"
-            step="0.05"
-            value={s.narrationRate}
-            onChange={(e) => update({ narrationRate: Number(e.target.value) })}
+        <Slider
+          label={t('speed')}
+          min={0.6}
+          max={1.4}
+          step={0.05}
+          value={s.narrationRate}
+          format={(value) => `${value.toFixed(2)}×`}
+          onChange={(value) => update({ narrationRate: value })}
+        />
+        <Select
+          label={t('sensitivity')}
+          value={s.sensitivity}
+          onChange={(value) =>
+            update({ sensitivity: value as typeof s.sensitivity })
+          }
+          options={[
+            { value: 'gentle', label: 'Gentle movements' },
+            { value: 'standard', label: 'Standard' },
+            { value: 'deliberate', label: 'Deliberate movements' },
+          ]}
+        />
+        {(Object.keys(TOGGLES) as Array<keyof typeof TOGGLES>).map((key) => (
+          <Toggle
+            key={key}
+            label={t(TOGGLES[key])}
+            checked={s[key]}
+            onChange={(checked) => update({ [key]: checked })}
           />
-        </label>
-        <label>
-          {t('sensitivity')}{' '}
-          <select
-            value={s.sensitivity}
-            onChange={(e) =>
-              update({ sensitivity: e.target.value as typeof s.sensitivity })
-            }
-          >
-            <option value="gentle">Gentle movements</option>
-            <option value="standard">Standard</option>
-            <option value="deliberate">Deliberate movements</option>
-          </select>
-        </label>
-        {(
-          [
-            'seated',
-            'captions',
-            'reducedMotion',
-            'camera',
-            'classroom',
-            'coop',
-          ] as const
-        ).map((key) => (
-          <label key={key}>
-            <input
-              type="checkbox"
-              checked={s[key]}
-              onChange={(e) => update({ [key]: e.target.checked })}
-            />
-            {t(
-              (
-                {
-                  seated: 'seated',
-                  captions: 'captions',
-                  reducedMotion: 'reducedMotion',
-                  camera: 'cameraAllowed',
-                  classroom: 'classroom',
-                  coop: 'coop',
-                } as const
-              )[key],
-            )}
-          </label>
         ))}
-        <label>
-          {t('volume')}{' '}
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={s.volume}
-            onChange={(e) => update({ volume: Number(e.target.value) })}
-          />
-        </label>
-        <label>
-          {t('language')}{' '}
-          <select
-            value={s.language}
-            onChange={(e) =>
-              update({ language: e.target.value as typeof s.language })
-            }
-          >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
-        </label>
+        <Slider
+          label={t('volume')}
+          min={0}
+          max={1}
+          step={0.05}
+          value={s.volume}
+          format={(value) => `${Math.round(value * 100)}%`}
+          onChange={(value) => update({ volume: value })}
+        />
+        <Select
+          label={t('language')}
+          value={s.language}
+          onChange={(value) => update({ language: value as typeof s.language })}
+          options={[
+            { value: 'en', label: 'English' },
+            { value: 'es', label: 'Español' },
+          ]}
+        />
         <p>
           Only preferences and saved stories stay on this device. Camera data is
           never saved during play.
         </p>
-        <Link
-          onClick={() =>
-            window.dispatchEvent(new Event('storymotion-parent-close'))
-          }
-          to="/parent/create"
-        >
-          Generate a story
-        </Link>
-        {' · '}
-        <Link
-          onClick={() =>
-            window.dispatchEvent(new Event('storymotion-parent-close'))
-          }
-          to="/parent/editor"
-        >
-          Story creator
-        </Link>
+        <p className="parent-settings__links">
+          <Link onClick={closeParent} to="/parent/create">
+            Generate a story
+          </Link>
+          {' · '}
+          <Link onClick={closeParent} to="/parent/editor">
+            Story creator
+          </Link>
+        </p>
       </div>
     </ParentGate>
   );

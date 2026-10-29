@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { ButtonLink, Panel } from '../ui';
 import { completions, getSavedStory } from './storage';
 export function CompletionRecap({ storyId }: { storyId: string }) {
   const [recap, setRecap] = useState('');
@@ -42,16 +43,23 @@ export function SavedCompletionPage() {
     };
   }, [id]);
   return (
-    <section className="completion">
+    <Panel
+      as="section"
+      variant="glow"
+      entrance
+      className="completion saved-completion"
+    >
       <h1>🌟 {title}</h1>
       <h2>The End — Adventure Complete!</h2>
       <CompletionRecap storyId={id} />
-      <Link className="btn" to="/library">
-        Story library
-      </Link>
-      <Link className="btn" to={`/my-stories/${encodeURIComponent(id)}/play`}>
-        Play again
-      </Link>
-    </section>
+      <div className="ui-row ui-row--center">
+        <ButtonLink variant="secondary" to="/library">
+          Story library
+        </ButtonLink>
+        <ButtonLink to={`/my-stories/${encodeURIComponent(id)}/play`}>
+          Play again
+        </ButtonLink>
+      </div>
+    </Panel>
   );
 }

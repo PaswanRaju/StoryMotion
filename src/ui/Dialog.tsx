@@ -5,38 +5,40 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { X } from 'lucide-react';
+import { IconButton } from './Button';
 
-type ModalProps = {
+type DialogProps = {
   title: string;
   onClose: () => void;
   children: ReactNode;
   closeLabel?: string;
+  /** glass for app chrome; scroll for story/parent reading. */
+  variant?: 'glass' | 'scroll';
 };
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /**
- * Minimal accessible dialog: traps Tab focus inside, restores focus to the
- * trigger on close, and closes on Escape. Used for both the Home "How It
- * Works" modal and the in-player Pause Dialog.
+ * Accessible dialog: moves focus in on open, traps Tab, closes on Escape, and
+ * restores focus to the trigger. The panel bounces in (fades only with reduced
+ * motion) over a dimmed, softly blurred backdrop.
  */
-export function Modal({
+export function Dialog({
   title,
   onClose,
   children,
   closeLabel = 'Close',
-}: ModalProps) {
+  variant = 'glass',
+}: DialogProps) {
   const titleId = useId();
   const overlayRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement | null;
-    const node = overlayRef.current;
-    const first = node?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    first?.focus();
-
+    overlayRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
     return () => {
       previouslyFocused.current?.focus();
     };
@@ -48,19 +50,15 @@ export function Modal({
       onClose();
       return;
     }
-
     if (event.key !== 'Tab') return;
-
     const node = overlayRef.current;
     if (!node) return;
     const focusable = Array.from(
       node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
     );
     if (focusable.length === 0) return;
-
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
@@ -72,37 +70,29 @@ export function Modal({
 
   return (
     <div
-      className="modal-overlay"
+      className="ui-dialog-overlay"
       ref={overlayRef}
       onKeyDown={handleKeyDown}
       role="presentation"
     >
       <div
-        className="modal"
+        className={`ui-dialog ui-panel ui-panel--${variant} ui-pop-in`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <h2 id={titleId} style={{ marginBottom: 0 }}>
+        <div className="ui-dialog__head">
+          <h2 id={titleId} className="ui-dialog__title">
             {title}
           </h2>
-          <button
-            type="button"
-            className="btn btn--ghost btn--small"
+          <IconButton
+            icon={<X size={24} strokeWidth={3} />}
+            label={closeLabel}
+            size="md"
             onClick={onClose}
-            aria-label={closeLabel}
-          >
-            ✕
-          </button>
+          />
         </div>
-        <div style={{ marginTop: 'var(--space-4)' }}>{children}</div>
+        <div className="ui-dialog__body">{children}</div>
       </div>
     </div>
   );

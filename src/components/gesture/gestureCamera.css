@@ -20,14 +20,6 @@
   gap: 8px;
   margin-bottom: 12px;
 }
-.gesture-camera button {
-  min-height: 48px;
-  padding: 10px 14px;
-  cursor: pointer;
-}
-.gesture-camera button:disabled {
-  cursor: default;
-}
 .gesture-camera p {
   margin: 12px 0;
 }

@@ -12,6 +12,7 @@ import type {
 import type { MagicAction } from '../../vision/magicGesture';
 import { playSfx } from '../../audio/sfx';
 import './gestureCamera.css';
+import { Button } from '../../ui';
 
 const ALMOST: Record<BodyGesture, string> = {
   BLOW: 'A gentle puff… almost there!',
@@ -320,20 +321,17 @@ export function GestureCamera({
         </p>
       )}
       <div className="camera-controls">
-        <button
-          className="btn btn--secondary"
+        <Button
+          variant="secondary"
           disabled={running || !settings.camera}
           onClick={() => void controller.current?.start()}
         >
           {t('startCamera')}
-        </button>
+        </Button>
         {running && (
-          <button
-            className="btn btn--ghost"
-            onClick={() => controller.current?.stop()}
-          >
+          <Button variant="ghost" onClick={() => controller.current?.stop()}>
             {t('stopCamera')}
-          </button>
+          </Button>
         )}
       </div>
       {['requesting', 'loading'].includes(status) && (
@@ -342,16 +340,15 @@ export function GestureCamera({
         </div>
       )}
       {['denied', 'error', 'idle', 'unavailable'].includes(status) && (
-        <button
-          type="button"
-          className="btn btn--secondary"
+        <Button
+          variant="secondary"
           onClick={() => {
             controller.current?.stop();
             onContinueWithoutCamera?.();
           }}
         >
           {t('continue')}
-        </button>
+        </Button>
       )}
       <p className="camera-privacy">{t('privacy')}</p>
       {developerMode && (

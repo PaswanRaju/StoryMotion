@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
+import { Button } from '../ui';
 interface InstallEvent extends Event {
   prompt(): Promise<void>;
 }
@@ -13,11 +15,14 @@ export function InstallButton() {
     return () => window.removeEventListener('beforeinstallprompt', ready);
   }, []);
   return event ? (
-    <button
-      className="btn btn--secondary"
+    <Button
+      variant="secondary"
+      size="md"
+      className="install-button"
+      icon={<Download size={20} />}
       onClick={() => void event.prompt().finally(() => setEvent(null))}
     >
       Install StoryMotion
-    </button>
+    </Button>
   ) : null;
 }

@@ -14,9 +14,6 @@
   display: grid;
   gap: var(--space-3);
 }
-.automatic-player .btn {
-  min-height: 48px;
-}
 .automatic-player .magic-invitation {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
@@ -80,15 +77,6 @@
   flex-wrap: wrap;
   gap: 10px;
 }
-.automatic-player .story-actions .btn {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.automatic-player .story-actions small {
-  font-family: var(--font-body);
-  font-size: 12px;
-}
 .animated-story .story-duck {
   transform-box: fill-box;
   transform-origin: center bottom;
@@ -111,23 +99,6 @@
   z-index: 2;
   top: 10px;
   right: 10px;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: none;
-  border-radius: 999px;
-  background: rgb(255 250 240 / 85%);
-  color: var(--color-cocoa-dark);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgb(58 38 20 / 25%);
-}
-.automatic-player .scene-fullscreen:hover {
-  background: #fffaf0;
-}
-.automatic-player .scene-fullscreen:focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
 }
 /* Cinema mode keeps the 16:9 scene as large as fits, with captions and choices below. */
 .automatic-player .story-column:fullscreen {
@@ -197,14 +168,10 @@
     flex-wrap: nowrap;
     gap: 8px;
   }
-  .automatic-player .scene-frame .story-actions .btn {
-    min-height: 48px;
-    padding: 6px 14px;
-    font-size: 15px;
+  .automatic-player .scene-frame .story-actions .ui-btn {
+    --btn-pad: 1rem;
+    --btn-fs: 1rem;
     white-space: nowrap;
-  }
-  .automatic-player .scene-frame .story-actions small {
-    font-size: 11px;
   }
   .automatic-player .scene-frame .invite-timer {
     margin-bottom: 10px;
@@ -259,25 +226,6 @@
   flex-wrap: wrap;
   gap: 10px;
 }
-.automatic-player .player-toolbar__btn {
-  min-height: 48px;
-  padding: 8px 18px;
-  border-radius: 999px;
-  background: #fffaf0;
-  border: 2px solid #e6d8bd;
-  box-shadow: 0 3px 0 #e6d8bd;
-  transition:
-    translate 120ms ease,
-    box-shadow 120ms ease;
-}
-.automatic-player .player-toolbar__btn:hover {
-  translate: 0 -1px;
-  box-shadow: 0 4px 0 #e6d8bd;
-}
-.automatic-player .player-toolbar__btn:active {
-  translate: 0 2px;
-  box-shadow: 0 1px 0 #e6d8bd;
-}
 
 .automatic-player .theater {
   position: relative;
@@ -323,15 +271,6 @@
     0 10px 30px rgb(0 0 0 / 40%),
     0 0 40px rgb(255 211 110 / 45%);
 }
-.automatic-player .scene-fullscreen {
-  background: rgb(20 28 39 / 55%);
-  color: #fffaf0;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgb(255 255 255 / 25%);
-}
-.automatic-player .scene-fullscreen:hover {
-  background: rgb(20 28 39 / 75%);
-}
 
 /* Movie subtitles under the picture */
 .subtitle-bar {
@@ -362,26 +301,7 @@
 .subtitle-bar__replay {
   grid-row: 1 / span 2;
   grid-column: 2;
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 2px solid rgb(255 255 255 / 28%);
-  background: rgb(255 255 255 / 10%);
-  color: #fffaf0;
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    rotate 300ms ease;
-}
-.subtitle-bar__replay:hover {
-  background: rgb(255 255 255 / 20%);
-  rotate: -40deg;
-}
-.subtitle-bar__replay:focus-visible {
-  outline: 3px solid #ffd36e;
-  outline-offset: 2px;
+  align-self: center;
 }
 
 /* Floating camera window (picture-in-picture) */

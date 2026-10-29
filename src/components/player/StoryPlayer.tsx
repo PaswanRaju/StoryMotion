@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import {
+  Camera,
+  Maximize2,
+  Minimize2,
+  Pause,
+  RotateCcw,
+  SkipForward,
+} from 'lucide-react';
+import { Button, IconButton } from '../../ui';
 import { useNavigate } from 'react-router-dom';
 import type { StorySummary } from '../../data/stories/registry';
 import { SceneRenderer } from '../../engine/SceneRenderer';
@@ -250,34 +258,42 @@ export function StoryPlayer({
     <section className="automatic-player" onPointerDown={unlockSfx}>
       {settings.classroom && (
         <nav className="teacher-controls" aria-label="Teacher controls">
-          <button
-            className="btn"
+          <Button
+            variant="ghost"
+            size="md"
+            icon={<Pause size={20} />}
             onClick={() => dispatch({ type: 'PAUSE', paused: !state.paused })}
           >
             {t('pause')}
-          </button>
-          <button
-            className="btn"
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
+            icon={<SkipForward size={20} />}
             onClick={() => dispatch({ type: 'SKIP_SCENE' })}
           >
             {t('skip')}
-          </button>
-          <button
-            className="btn"
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
+            icon={<RotateCcw size={20} />}
             onClick={() => {
               dispatch({ type: 'REPLAY_SCENE' });
               replayNarration();
             }}
           >
             {t('replay')}
-          </button>
-          <button
-            className="btn"
+          </Button>
+          <Button
+            variant={settings.camera ? 'secondary' : 'ghost'}
+            size="md"
+            icon={<Camera size={20} />}
             aria-pressed={settings.camera}
             onClick={() => updatePreferences({ camera: !settings.camera })}
           >
             {t('camera')}
-          </button>
+          </Button>
         </nav>
       )}
       <div inert={state.paused || undefined}>
@@ -297,18 +313,18 @@ export function StoryPlayer({
             <div className="scene-frame">
               <div className="buddy-corner" ref={setBuddyHost} />
               {fullscreenSupported && (
-                <button
-                  type="button"
+                <IconButton
                   className="scene-fullscreen"
-                  aria-label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+                  label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+                  icon={
+                    isFullscreen ? (
+                      <Minimize2 size={26} strokeWidth={2.5} />
+                    ) : (
+                      <Maximize2 size={26} strokeWidth={2.5} />
+                    )
+                  }
                   onClick={toggleFullscreen}
-                >
-                  {isFullscreen ? (
-                    <Minimize2 size={20} aria-hidden="true" />
-                  ) : (
-                    <Maximize2 size={20} aria-hidden="true" />
-                  )}
-                </button>
+                />
               )}
               <SceneRenderer
                 scene={active.scene}
@@ -362,9 +378,8 @@ export function StoryPlayer({
                     </p>
                     <div className="story-actions">
                       {quiz.choices.map((choice, index) => (
-                        <button
-                          type="button"
-                          className="btn btn--secondary"
+                        <Button
+                          variant="secondary"
                           disabled={!!quizAnswer}
                           key={index}
                           onClick={() => {
@@ -373,7 +388,7 @@ export function StoryPlayer({
                           }}
                         >
                           {index === 0 ? 'A' : 'B'}: {choice}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -421,10 +436,10 @@ export function StoryPlayer({
                     />
                     <div className="story-actions">
                       {MOMENTS[state.moment].accepts.map((gesture) => (
-                        <button
+                        <Button
                           key={gesture}
-                          data-sfx="none"
-                          className="btn btn--secondary"
+                          sfx="none"
+                          variant="magic"
                           aria-label={
                             buttonFor(MOMENTS[state.moment], gesture)
                               .buttonLabel
@@ -443,7 +458,7 @@ export function StoryPlayer({
                                 .buttonHint
                             }
                           </small>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </>

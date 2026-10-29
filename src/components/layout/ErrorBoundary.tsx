@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { PrimaryButton } from './PrimaryButton';
+import { Button, Panel } from '../../ui';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -36,20 +36,13 @@ export class ErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div
-          className="app-shell__main"
-          role="alert"
-          style={{ textAlign: 'center', margin: 'auto' }}
-        >
+        <Panel variant="glow" role="alert" className="page-message">
           <h2>Oops, the story got a little tangled.</h2>
           <p>
-            Something unexpected happened. You can head back home and try
-            again.
+            Something unexpected happened. You can head back home and try again.
           </p>
-          <PrimaryButton onClick={this.handleReset}>
-            Back to Home
-          </PrimaryButton>
-        </div>
+          <Button onClick={this.handleReset}>Back to Home</Button>
+        </Panel>
       );
     }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { Button, IconButton, Panel } from '../../ui';
 
 export type NarrationPanelProps = {
   language?: 'en' | 'es';
@@ -27,7 +27,7 @@ export function NarrationPanel({
   text,
   onReplay,
   onContinue,
-  accent = 'var(--color-surface)',
+  accent,
   variant = 'card',
 }: NarrationPanelProps) {
   const [charIndex, setCharIndex] = useState(-1);
@@ -45,64 +45,39 @@ export function NarrationPanel({
             <CaptionWords text={text} charIndex={charIndex} />
           </span>
         </p>
-        <button
-          type="button"
+        <IconButton
           className="subtitle-bar__replay"
-          onClick={onReplay}
-          aria-label="Replay narration"
+          icon={<RotateCcw size={26} strokeWidth={2.5} />}
+          label="Replay narration"
           title="Hear it again"
-        >
-          <RotateCcw size={20} aria-hidden="true" />
-        </button>
+          onClick={onReplay}
+        />
       </div>
     );
   return (
-    <div
-      className="card"
-      style={{
-        background: accent,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--space-2)',
-      }}
+    <Panel
+      variant="scroll"
+      className="narration-card"
+      style={accent ? { background: accent } : undefined}
     >
-      <span
-        style={{
-          fontFamily: 'var(--font-heading)',
-          fontWeight: 600,
-          color: 'var(--color-honey-dark)',
-        }}
-      >
-        {speaker}
-      </span>
-      <p style={{ margin: 0, fontSize: 'var(--fs-md)' }} aria-live="polite">
+      <span className="narration-card__speaker">{speaker}</span>
+      <p className="narration-card__text" aria-live="polite">
         <span key={text} className="narration-line">
           <CaptionWords text={text} charIndex={charIndex} />
         </span>
       </p>
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <button
-          type="button"
-          className="btn btn--ghost btn--small"
+      <div className="narration-card__actions">
+        <Button
+          variant="secondary"
+          icon={<RotateCcw size={22} />}
           onClick={onReplay}
           aria-label="Replay narration"
         >
-          <RotateCcw size={16} aria-hidden="true" />
           Replay
-        </button>
-        {onContinue && (
-          <PrimaryButton size="small" onClick={onContinue}>
-            Continue
-          </PrimaryButton>
-        )}
+        </Button>
+        {onContinue && <Button onClick={onContinue}>Continue</Button>}
       </div>
-    </div>
+    </Panel>
   );
 }
 

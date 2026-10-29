@@ -6,6 +6,7 @@ import { useSession } from '../../app/SessionContext';
 import { usePreferences } from '../../settings/preferences';
 import { playSfx } from '../../audio/sfx';
 import type { BodyGesture, BodyTracking } from '../../gestures';
+import { Button, Panel } from '../../ui';
 import './warmup.css';
 
 const STEPS: { gesture: BodyGesture; text: string }[] = [
@@ -113,7 +114,7 @@ export function Warmup({
     setStage((prev) => prev + 1);
   };
   return (
-    <section className="warmup galaxy-panel">
+    <Panel as="section" variant="glow" entrance className="warmup">
       <p className="eyebrow">A little space practice</p>
       <h1>Hello, explorer!</h1>
       <div className="warmup-stage">
@@ -152,26 +153,22 @@ export function Warmup({
       />
       <div className="story-actions">
         {stage >= 0 && !done && (
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => answer(steps[stage].gesture)}
-          >
+          <Button variant="magic" onClick={() => answer(steps[stage].gesture)}>
             Light the star
-          </button>
+          </Button>
         )}
         {done && (
-          <button type="button" className="btn btn--primary" onClick={finish}>
+          <Button size="xl" sfx="start" onClick={finish}>
             Start the story
-          </button>
+          </Button>
         )}
-        <button type="button" className="btn btn--secondary" onClick={finish}>
+        <Button variant="ghost" onClick={finish}>
           Skip warm-up
-        </button>
+        </Button>
       </div>
       <p>
         The camera is processed on this device. Nothing is recorded or uploaded.
       </p>
-    </section>
+    </Panel>
   );
 }

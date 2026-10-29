@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Modal } from '../components/layout/Modal';
+import { Lock } from 'lucide-react';
+import { Button, Dialog, ProgressRing } from '../ui';
 
 export function ParentGate({
   children,
@@ -44,9 +45,20 @@ export function ParentGate({
   }, []);
   return (
     <>
-      <button
-        type="button"
-        className="btn btn--secondary parent-gate"
+      <Button
+        variant="ghost"
+        size="md"
+        className={`parent-gate${holding ? ' is-holding' : ''}`}
+        icon={
+          <ProgressRing
+            value={holding ? 1 : 0}
+            max={1}
+            label="Hold progress"
+            size={30}
+          >
+            <Lock size={14} strokeWidth={3} />
+          </ProgressRing>
+        }
         aria-label={`${label}: hold for 3 seconds`}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
@@ -66,9 +78,10 @@ export function ParentGate({
         onKeyUp={cancel}
       >
         {holding ? 'Keep holding…' : label}
-      </button>
+      </Button>
       {open && (
-        <Modal
+        <Dialog
+          variant="scroll"
           title={label}
           onClose={() => {
             setOpen(false);
@@ -76,7 +89,7 @@ export function ParentGate({
           }}
         >
           {children}
-        </Modal>
+        </Dialog>
       )}
     </>
   );

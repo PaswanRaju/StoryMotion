@@ -1,5 +1,5 @@
-import { Modal } from '../layout/Modal';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { Play, RotateCcw, Undo2, Volume2 } from 'lucide-react';
+import { Button, Dialog } from '../../ui';
 
 type PauseDialogProps = {
   onResume: () => void;
@@ -15,19 +15,40 @@ export function PauseDialog({
   onExitToLibrary,
 }: PauseDialogProps) {
   return (
-    <Modal title="Paused" onClose={onResume} closeLabel="Resume story">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-        <PrimaryButton onClick={onResume}>Resume</PrimaryButton>
-        <PrimaryButton variant="secondary" onClick={onReplayInstruction}>
+    <Dialog title="Paused" onClose={onResume} closeLabel="Resume story">
+      <div className="ui-stack">
+        <Button
+          block
+          icon={<Play size={24} fill="currentColor" />}
+          onClick={onResume}
+        >
+          Resume
+        </Button>
+        <Button
+          block
+          variant="secondary"
+          icon={<Volume2 size={24} />}
+          onClick={onReplayInstruction}
+        >
           Hear That Again
-        </PrimaryButton>
-        <PrimaryButton variant="ghost" onClick={onRestartStory}>
+        </Button>
+        <Button
+          block
+          variant="ghost"
+          icon={<RotateCcw size={24} />}
+          onClick={onRestartStory}
+        >
           Restart Story
-        </PrimaryButton>
-        <PrimaryButton variant="ghost" onClick={onExitToLibrary}>
+        </Button>
+        <Button
+          block
+          variant="ghost"
+          icon={<Undo2 size={24} />}
+          onClick={onExitToLibrary}
+        >
           Exit to Library
-        </PrimaryButton>
+        </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }

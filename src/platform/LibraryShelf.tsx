@@ -4,6 +4,7 @@ import { completions, savedStories } from './storage';
 import type { Completion, SavedStory } from './storage';
 import { storyRegistry } from '../data/stories/registry';
 import { useI18n } from '../i18n';
+import { Badge, Panel } from '../ui';
 export function LibraryShelf({
   includeBuiltins = false,
 }: {
@@ -34,7 +35,12 @@ export function LibraryShelf({
     };
   }, []);
   return (
-    <section className="library-shelf" aria-label={t('myStories')}>
+    <Panel
+      as="section"
+      variant="glass"
+      className="library-shelf"
+      aria-label={t('myStories')}
+    >
       <h2>{t('myStories')}</h2>
       <div className="shelf-grid">
         {includeBuiltins &&
@@ -65,14 +71,17 @@ export function LibraryShelf({
       </div>
       {!saved.length && <p>{t('savedHint')}</p>}
       {stickers.length > 0 && (
-        <div aria-label={t('stickers')}>
+        <ul className="shelf-stickers" aria-label={t('stickers')}>
           {stickers.map((record) => (
-            <p key={record.storyId}>
-              🌟 {record.title} — {record.recap}
-            </p>
+            <li key={record.storyId}>
+              <Badge tone="gold" icon="🌟">
+                {record.title}
+              </Badge>{' '}
+              {record.recap}
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </section>
+    </Panel>
   );
 }

@@ -9,15 +9,16 @@ import type { Story } from '../engine/schema';
 import { registryCatalog } from '../engine/registry';
 import { saveStory } from '../platform/storage';
 import { StoryPlayer } from '../components/player/StoryPlayer';
+import { Button, Panel } from '../ui';
 export function StoryGeneratorPage() {
   return (
-    <section>
+    <Panel as="section" variant="scroll" className="grown-up-page">
       <h1>Grown-up story studio</h1>
       <p>Choose an adventure with no names or personal details.</p>
       <ParentGate label="Open story studio">
         <GeneratorForm />
       </ParentGate>
-    </section>
+    </Panel>
   );
 }
 export function GeneratorForm({
@@ -85,9 +86,9 @@ export function GeneratorForm({
   if (preview && story)
     return (
       <>
-        <button className="btn" onClick={() => setPreview(false)}>
+        <Button variant="ghost" size="md" onClick={() => setPreview(false)}>
           Back to studio
-        </button>
+        </Button>
         <StoryPlayer story={story} onComplete={() => setPreview(false)} />
       </>
     );
@@ -133,28 +134,24 @@ export function GeneratorForm({
         />{' '}
         Include a few questions
       </label>
-      <button
-        type="button"
-        className="btn btn--primary"
-        disabled={busy}
-        onClick={() => void generate()}
-      >
+      <Button size="md" disabled={busy} onClick={() => void generate()}>
         {busy
           ? 'Making your story…'
           : initial
             ? 'Regenerate for this age'
             : 'Generate story'}
-      </button>
+      </Button>
       <p role="status">{message}</p>
       {story && (
         <>
           <h2>{story.title}</h2>
           <p>{story.description}</p>
-          <button className="btn" onClick={() => setPreview(true)}>
+          <Button variant="ghost" size="md" onClick={() => setPreview(true)}>
             Preview story
-          </button>
-          <button
-            className="btn"
+          </Button>
+          <Button
+            variant="ghost"
+            size="md"
             onClick={() =>
               void saveStory(story, recipe, sourceToken)
                 .then(() => setMessage('Saved on this device.'))
@@ -166,7 +163,7 @@ export function GeneratorForm({
             }
           >
             Save to My Stories
-          </button>
+          </Button>
           <Link to="/library">Open My Stories</Link>
         </>
       )}

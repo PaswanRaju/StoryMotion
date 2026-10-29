@@ -10,6 +10,7 @@ import {
   registryCatalog,
 } from '../engine/registry';
 import { saveStory } from '../platform/storage';
+import { Button, Panel } from '../ui';
 function emptyScene(id: string, stage = 'plot'): Scene {
   return {
     id,
@@ -61,13 +62,13 @@ function blankStory(): Story {
 }
 export function StoryCreatorPage() {
   return (
-    <section>
+    <Panel as="section" variant="scroll" className="grown-up-page">
       <h1>Story creator</h1>
       <p>Build and preview a story on this device.</p>
       <ParentGate label="Open story creator">
         <StoryEditor />
       </ParentGate>
-    </section>
+    </Panel>
   );
 }
 export function StoryEditor() {
@@ -121,8 +122,9 @@ export function StoryEditor() {
   return (
     <div className="story-editor">
       <div className="editor-actions">
-        <button
-          className="btn"
+        <Button
+          variant="ghost"
+          size="md"
           onClick={() => {
             setStory(structuredClone(riveExample));
             setSelected(0);
@@ -130,7 +132,7 @@ export function StoryEditor() {
           }}
         >
           Load Rive example
-        </button>
+        </Button>
         <label>
           Import JSON
           <input
@@ -158,11 +160,17 @@ export function StoryEditor() {
             }}
           />
         </label>
-        <button className="btn" disabled={!!error} onClick={exportJSON}>
+        <Button
+          variant="ghost"
+          size="md"
+          disabled={!!error}
+          onClick={exportJSON}
+        >
           Export JSON
-        </button>
-        <button
-          className="btn"
+        </Button>
+        <Button
+          variant="ghost"
+          size="md"
           disabled={!!error}
           onClick={() =>
             void saveStory(story)
@@ -171,14 +179,15 @@ export function StoryEditor() {
           }
         >
           Save story
-        </button>
-        <button
-          className="btn"
+        </Button>
+        <Button
+          variant="ghost"
+          size="md"
           disabled={!!error}
           onClick={() => setPreview((prev) => !prev)}
         >
           {preview ? 'Close preview' : 'Live preview'}
-        </button>
+        </Button>
       </div>
       <p role="status">{message}</p>
       {error && (
@@ -202,19 +211,20 @@ export function StoryEditor() {
           <ol>
             {story.scenes.map((item, index) => (
               <li key={item.id}>
-                <button
-                  className="btn"
+                <Button
+                  variant="ghost"
+                  size="md"
                   aria-current={index === selected ? 'step' : undefined}
                   onClick={() => setSelected(index)}
                 >
                   {item.title}
-                </button>
+                </Button>
               </li>
             ))}
           </ol>
-          <button className="btn" onClick={addScene}>
+          <Button variant="ghost" size="md" onClick={addScene}>
             Add scene
-          </button>
+          </Button>
         </nav>
         <div className="parent-settings">
           <label>
@@ -476,8 +486,9 @@ export function StoryEditor() {
                   )}
                 </div>
               ))}
-              <button
-                className="btn"
+              <Button
+                variant="ghost"
+                size="md"
                 onClick={() =>
                   editScene((scene) => {
                     scene.interactions.splice(index, 1);
@@ -485,11 +496,12 @@ export function StoryEditor() {
                 }
               >
                 Remove interaction
-              </button>
+              </Button>
             </fieldset>
           ))}
-          <button
-            className="btn"
+          <Button
+            variant="ghost"
+            size="md"
             onClick={() =>
               editScene((scene) => {
                 scene.interactions.push({
@@ -522,7 +534,7 @@ export function StoryEditor() {
             }
           >
             Add interaction
-          </button>
+          </Button>
         </div>
       </div>
       {preview && !error && (

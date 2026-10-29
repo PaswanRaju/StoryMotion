@@ -3,7 +3,8 @@ import { CharacterPicker } from './CharacterPicker';
 import { getStoryById } from '../../data/stories/registry';
 import { useSession } from '../../app/SessionContext';
 import { routes } from '../../app/router';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { ArrowLeft, Rocket } from 'lucide-react';
+import { Button, Panel } from '../../ui';
 import { StoryNotFound } from '../library/StoryNotFound';
 
 export function CharacterSelectPage() {
@@ -29,17 +30,10 @@ export function CharacterSelectPage() {
       </p>
 
       {mode === 'family' && (
-        <p
-          className="card"
-          style={{
-            background: 'var(--color-sky)',
-            border: 'none',
-            fontWeight: 600,
-          }}
-        >
+        <Panel variant="scroll" className="family-note">
           👨‍👩‍👧 Parent: pick a character together with your child before you
           continue.
-        </p>
+        </Panel>
       )}
 
       <CharacterPicker
@@ -49,26 +43,23 @@ export function CharacterSelectPage() {
         onSelect={setCharacterId}
       />
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: 'var(--space-6)',
-        }}
-      >
-        <PrimaryButton
+      <div className="page-actions">
+        <Button
           variant="ghost"
+          icon={<ArrowLeft size={24} />}
           onClick={() => navigate(routes.library())}
         >
           Back
-        </PrimaryButton>
-        <PrimaryButton
-          data-sfx="start"
+        </Button>
+        <Button
+          size="xl"
+          sfx="start"
+          icon={<Rocket size={28} />}
           disabled={!selectedValid}
           onClick={() => navigate(routes.cameraSetup(story.id))}
         >
           Let's Go
-        </PrimaryButton>
+        </Button>
       </div>
     </section>
   );

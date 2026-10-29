@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Music, Music2 } from 'lucide-react';
 import { useSession } from '../../app/SessionContext';
+import { IconButton } from '../../ui';
 
 export function Header() {
   const { sfxEnabled, toggleSfx } = useSession();
@@ -14,23 +15,24 @@ export function Header() {
       </Link>
       <div className="app-header__right">
         <span className="app-header__tag">Move · Imagine · Play</span>
-        <button
-          type="button"
+        <IconButton
           className={`sound-toggle${sfxEnabled ? ' is-on' : ''}`}
-          onClick={toggleSfx}
-          aria-pressed={sfxEnabled}
-          aria-label={sfxEnabled ? 'Turn sound effects off' : 'Turn sound effects on'}
-          data-sfx="toggle"
+          variant={sfxEnabled ? 'secondary' : 'ghost'}
+          icon={
+            sfxEnabled ? (
+              <Music2 size={26} strokeWidth={2.5} />
+            ) : (
+              <Music size={26} strokeWidth={2.5} />
+            )
+          }
+          label={
+            sfxEnabled ? 'Turn sound effects off' : 'Turn sound effects on'
+          }
           title="Sound effects (narration has its own button)"
-        >
-          {sfxEnabled ? <Music2 size={18} aria-hidden="true" /> : <Music size={18} aria-hidden="true" />}
-          <span>{sfxEnabled ? 'Effects on' : 'Effects off'}</span>
-          <span className="sound-toggle__bars" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-        </button>
+          aria-pressed={sfxEnabled}
+          sfx="toggle"
+          onClick={toggleSfx}
+        />
       </div>
     </header>
   );

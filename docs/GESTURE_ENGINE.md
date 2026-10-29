@@ -37,6 +37,20 @@ a development test window). The controller caps inference at 18 fps with one
 frame in flight; the worker also rejects disabled frames. No inference watchdog
 expires while the model is intentionally idle. Pause/close resets pending holds.
 
+### MediaPipe WASM loading in dev
+
+`WASM_ROOT` (`src/vision/poseAssets.ts`) must stay an **absolute** URL. The
+pinned SDK loads its runtime with `import(wasmLoaderPath)`, and the face/hand
+models append `?instance=N` so each lazy task gets a fresh `ModuleFactory`. In
+`npm run dev`, Vite rewrites that dynamic import in the prebundled dep with
+`__vite__injectQuery(url, 'import')`, which adds `?import` to root-relative
+paths. Vite then refuses `/wasm/...?import&instance=N` as a public-dir import
+("This file is in /public ... should not be imported from source code").
+`injectQuery` ignores URLs that don't start with `.` or `/`, so an absolute
+`http(s)://…/wasm` root is requested unchanged and served by Vite's normal
+public middleware (and by any static host in production). No custom Vite plugin
+is needed.
+
 ## Record a local fixture
 
 1. Run `npm run dev` and open `/dev/gesture-fixtures` on localhost.

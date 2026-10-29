@@ -1,11 +1,17 @@
 import type { Mode } from '../../engine/types';
+import { SelectCard } from '../../ui';
 
 type ModeSelectProps = {
   mode: Mode;
   onChange: (mode: Mode) => void;
 };
 
-const OPTIONS: Array<{ id: Mode; label: string; description: string; icon: string }> = [
+const OPTIONS: Array<{
+  id: Mode;
+  label: string;
+  description: string;
+  icon: string;
+}> = [
   {
     id: 'solo',
     label: 'Solo Adventure',
@@ -23,30 +29,25 @@ const OPTIONS: Array<{ id: Mode; label: string; description: string; icon: strin
 export function ModeSelect({ mode, onChange }: ModeSelectProps) {
   return (
     <div
-      className="grid"
+      className="mode-select"
       role="group"
       aria-label="Choose how you want to play"
-      style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}
     >
       {OPTIONS.map((option) => {
         const selected = mode === option.id;
         return (
-          <button
+          <SelectCard
             key={option.id}
-            type="button"
-            className={`card card--selectable${selected ? ' card--selected' : ''}`}
-            aria-pressed={selected}
-            data-sfx="select"
+            selected={selected}
+            className="mode-select__card"
             onClick={() => onChange(option.id)}
           >
-            <div style={{ fontSize: '2rem' }} aria-hidden="true">
+            <span className="mode-select__icon" aria-hidden="true">
               {option.icon}
-            </div>
-            <h3>{option.label}</h3>
-            <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
-              {option.description}
-            </p>
-          </button>
+            </span>
+            <span className="mode-select__label">{option.label}</span>
+            <span className="mode-select__desc">{option.description}</span>
+          </SelectCard>
         );
       })}
     </div>
