@@ -16,7 +16,11 @@ export function CharacterPicker({
   onSelect,
 }: CharacterPickerProps) {
   return (
-    <div className="character-grid" role="group" aria-label="Choose your character">
+    <div
+      className="character-grid"
+      role="group"
+      aria-label="Choose your character"
+    >
       {characters.map((character) => (
         <CharacterCard
           key={character.id}

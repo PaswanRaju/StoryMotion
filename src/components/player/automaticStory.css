@@ -14,9 +14,6 @@
   display: grid;
   gap: var(--space-3);
 }
-.automatic-player .btn {
-  min-height: 48px;
-}
 .automatic-player .magic-invitation {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
@@ -80,15 +77,6 @@
   flex-wrap: wrap;
   gap: 10px;
 }
-.automatic-player .story-actions .btn {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.automatic-player .story-actions small {
-  font-family: var(--font-body);
-  font-size: 12px;
-}
 .animated-story .story-duck {
   transform-box: fill-box;
   transform-origin: center bottom;
@@ -111,23 +99,6 @@
   z-index: 2;
   top: 10px;
   right: 10px;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: none;
-  border-radius: 999px;
-  background: rgb(255 250 240 / 85%);
-  color: var(--color-cocoa-dark);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgb(58 38 20 / 25%);
-}
-.automatic-player .scene-fullscreen:hover {
-  background: #fffaf0;
-}
-.automatic-player .scene-fullscreen:focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 2px;
 }
 /* Cinema mode keeps the 16:9 scene as large as fits, with captions and choices below. */
 .automatic-player .story-column:fullscreen {
@@ -197,14 +168,10 @@
     flex-wrap: nowrap;
     gap: 8px;
   }
-  .automatic-player .scene-frame .story-actions .btn {
-    min-height: 48px;
-    padding: 6px 14px;
-    font-size: 15px;
+  .automatic-player .scene-frame .story-actions .ui-btn {
+    --btn-pad: 1rem;
+    --btn-fs: 1rem;
     white-space: nowrap;
-  }
-  .automatic-player .scene-frame .story-actions small {
-    font-size: 11px;
   }
   .automatic-player .scene-frame .invite-timer {
     margin-bottom: 10px;
@@ -219,11 +186,17 @@
   animation: invite-almost-pulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes invite-almost-pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .invite-almost { animation: none; }
+  .invite-almost {
+    animation: none;
+  }
 }
 
 /* ======================================================================
@@ -253,23 +226,6 @@
   flex-wrap: wrap;
   gap: 10px;
 }
-.automatic-player .player-toolbar__btn {
-  min-height: 48px;
-  padding: 8px 18px;
-  border-radius: 999px;
-  background: #fffaf0;
-  border: 2px solid #e6d8bd;
-  box-shadow: 0 3px 0 #e6d8bd;
-  transition: translate 120ms ease, box-shadow 120ms ease;
-}
-.automatic-player .player-toolbar__btn:hover {
-  translate: 0 -1px;
-  box-shadow: 0 4px 0 #e6d8bd;
-}
-.automatic-player .player-toolbar__btn:active {
-  translate: 0 2px;
-  box-shadow: 0 1px 0 #e6d8bd;
-}
 
 .automatic-player .theater {
   position: relative;
@@ -277,7 +233,11 @@
   padding: 12px 12px 0;
   border-radius: 30px;
   background:
-    radial-gradient(120% 70% at 50% 0%, rgb(255 211 110 / 14%), transparent 60%),
+    radial-gradient(
+      120% 70% at 50% 0%,
+      rgb(255 211 110 / 14%),
+      transparent 60%
+    ),
     linear-gradient(180deg, #24364a 0%, #18222f 100%);
   box-shadow:
     0 28px 60px -24px rgb(20 28 39 / 70%),
@@ -311,15 +271,6 @@
     0 10px 30px rgb(0 0 0 / 40%),
     0 0 40px rgb(255 211 110 / 45%);
 }
-.automatic-player .scene-fullscreen {
-  background: rgb(20 28 39 / 55%);
-  color: #fffaf0;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgb(255 255 255 / 25%);
-}
-.automatic-player .scene-fullscreen:hover {
-  background: rgb(20 28 39 / 75%);
-}
 
 /* Movie subtitles under the picture */
 .subtitle-bar {
@@ -350,24 +301,7 @@
 .subtitle-bar__replay {
   grid-row: 1 / span 2;
   grid-column: 2;
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 2px solid rgb(255 255 255 / 28%);
-  background: rgb(255 255 255 / 10%);
-  color: #fffaf0;
-  cursor: pointer;
-  transition: background 150ms ease, rotate 300ms ease;
-}
-.subtitle-bar__replay:hover {
-  background: rgb(255 255 255 / 20%);
-  rotate: -40deg;
-}
-.subtitle-bar__replay:focus-visible {
-  outline: 3px solid #ffd36e;
-  outline-offset: 2px;
+  align-self: center;
 }
 
 /* Floating camera window (picture-in-picture) */
@@ -730,4 +664,93 @@
 .automatic-player .magic-invitation.is-quiet {
   opacity: 0;
   pointer-events: none;
+}
+/* Ghost demonstrations keep one clear move per prompt. */
+.gesture-hint__body {
+  opacity: 0.85;
+}
+.gesture-hint--lean-left .gesture-hint__body {
+  animation: hint-lean-left 2s ease-in-out infinite;
+}
+.gesture-hint--lean-right .gesture-hint__body {
+  animation: hint-lean-right 2s ease-in-out infinite;
+}
+.gesture-hint--climb .gesture-hint__arm--left {
+  animation: hint-raise 1.2s ease-in-out infinite;
+}
+.gesture-hint--climb .gesture-hint__arm--right {
+  animation: hint-raise 1.2s 0.6s ease-in-out infinite;
+}
+.gesture-hint--clap .gesture-hint__arm--left {
+  animation: hint-clap-left 1.5s ease-in-out infinite;
+}
+.gesture-hint--clap .gesture-hint__arm--right {
+  animation: hint-clap-right 1.5s ease-in-out infinite;
+}
+.gesture-hint--run-in-place .gesture-hint__body {
+  animation: hint-hop 1s ease-in-out infinite;
+}
+.gesture-hint--blow .gesture-hint__head {
+  animation: hint-puff 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.gesture-hint--crouch .gesture-hint__body {
+  animation: hint-crouch 2s ease-in-out infinite;
+}
+@keyframes hint-lean-left {
+  35%,
+  65% {
+    rotate: -14deg;
+  }
+}
+@keyframes hint-lean-right {
+  35%,
+  65% {
+    rotate: 14deg;
+  }
+}
+@keyframes hint-clap-left {
+  35%,
+  65% {
+    rotate: -65deg;
+  }
+}
+@keyframes hint-clap-right {
+  35%,
+  65% {
+    rotate: 65deg;
+  }
+}
+@keyframes hint-hop {
+  50% {
+    translate: 0 -8px;
+  }
+}
+@keyframes hint-puff {
+  40%,
+  65% {
+    scale: 1.15 1;
+  }
+}
+@keyframes hint-crouch {
+  35%,
+  65% {
+    scale: 1 0.7;
+  }
+}
+[data-anticipation='watching'] .jack {
+  filter: brightness(1.05);
+}
+[data-anticipation='excited'] .jack {
+  filter: drop-shadow(0 0 10px #fef08a);
+}
+.is-anticipating .char-eye,
+.is-anticipating .sb-blink {
+  translate: -2px 0;
+  transition: translate 180ms ease;
+}
+.is-excited .tt-head,
+.is-excited .sb-jack {
+  filter: drop-shadow(0 0 9px #fde68a);
 }

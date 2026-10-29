@@ -121,6 +121,10 @@ export function automaticStoryReducer(
         remaining: reset ? moments[state.moment].windowMs : state.remaining,
       };
     }
+    case 'BLOW':
+    case 'CLIMB':
+    case 'CLAP':
+    case 'RUN_IN_PLACE':
     case 'HAND_RAISE':
     case 'LEAN_LEFT':
     case 'LEAN_RIGHT':
@@ -180,8 +184,7 @@ export function automaticStoryReducer(
             remaining: moment.windowMs,
           };
       }
-      next.finished =
-        next.elapsed >= durationMs && next.interaction !== 'open';
+      next.finished = next.elapsed >= durationMs && next.interaction !== 'open';
       return next;
     }
   }

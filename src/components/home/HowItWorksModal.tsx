@@ -1,4 +1,4 @@
-import { Modal } from '../layout/Modal';
+import { Dialog } from '../../ui';
 
 type HowItWorksModalProps = {
   onClose: () => void;
@@ -21,15 +21,19 @@ const STEPS = [
 
 export function HowItWorksModal({ onClose }: HowItWorksModalProps) {
   return (
-    <Modal title="How It Works" onClose={onClose} closeLabel="Close How It Works">
-      <ol style={{ paddingLeft: 'var(--space-5)', margin: 0 }}>
+    <Dialog
+      title="How It Works"
+      onClose={onClose}
+      closeLabel="Close How It Works"
+    >
+      <ol className="how-it-works">
         {STEPS.map((step) => (
-          <li key={step.title} style={{ marginBottom: 'var(--space-4)' }}>
+          <li key={step.title}>
             <strong>{step.title}</strong>
-            <p style={{ margin: 0 }}>{step.text}</p>
+            <p>{step.text}</p>
           </li>
         ))}
       </ol>
-    </Modal>
+    </Dialog>
   );
 }

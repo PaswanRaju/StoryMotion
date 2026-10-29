@@ -1,11 +1,13 @@
+import { LibraryShelf } from '../../platform/LibraryShelf';
+import { InstallButton } from '../../platform/InstallButton';
 import { useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
 import { Hero } from './Hero';
 import { ModeSelect } from './ModeSelect';
 import { HowItWorksModal } from './HowItWorksModal';
 import { GestureHint } from '../player/GestureHint';
 import { useSession } from '../../app/SessionContext';
 import type { BodyGesture } from '../../vision/bodyGestures';
+import { Panel, Toggle } from '../../ui';
 
 const STEPS: { gesture: BodyGesture; title: string; text: string }[] = [
   {
@@ -31,17 +33,24 @@ export function HomePage() {
 
   return (
     <section className="home">
+      <InstallButton />
+      <LibraryShelf includeBuiltins />
       <Hero onHowItWorks={() => setShowHowItWorks(true)} />
 
       <ol className="home-steps" aria-label="How StoryMotion works">
         {STEPS.map((step, i) => (
-          <li key={step.title} style={{ animationDelay: `${200 + i * 120}ms` }}>
+          <Panel
+            as="li"
+            key={step.title}
+            className="home-step"
+            style={{ animationDelay: `${200 + i * 120}ms` }}
+          >
             <GestureHint gesture={step.gesture} />
             <div>
               <h3>{step.title}</h3>
               <p>{step.text}</p>
             </div>
-          </li>
+          </Panel>
         ))}
       </ol>
 
@@ -51,19 +60,11 @@ export function HomePage() {
       </div>
 
       <div className="home-footer">
-        <button
-          type="button"
-          className="btn btn--ghost btn--small"
-          onClick={toggleAudio}
-          aria-pressed={audioEnabled}
-        >
-          {audioEnabled ? (
-            <Volume2 size={18} aria-hidden="true" />
-          ) : (
-            <VolumeX size={18} aria-hidden="true" />
-          )}
-          {audioEnabled ? 'Sound On' : 'Sound Off'}
-        </button>
+        <Toggle
+          label="Story voice"
+          checked={audioEnabled}
+          onChange={toggleAudio}
+        />
         <p>
           🔒 Your camera stays on this device. We never record, save, or send
           video anywhere.

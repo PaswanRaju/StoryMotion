@@ -9,7 +9,7 @@ import type { BodyGesture } from '../../vision/bodyGestures';
 export function GestureHint({ gesture }: { gesture: BodyGesture }) {
   return (
     <svg
-      className={`gesture-hint gesture-hint--${gesture.toLowerCase().replace('_', '-')}`}
+      className={`gesture-hint gesture-hint--${gesture.toLowerCase().replaceAll('_', '-')}`}
       viewBox="-60 -70 120 130"
       width="92"
       height="100"
@@ -19,7 +19,10 @@ export function GestureHint({ gesture }: { gesture: BodyGesture }) {
       <g transform="translate(0 44)">
         <g className="gesture-hint__body">
           <g transform="translate(0 -44)">
-            <path d="M0 -24V12M0 12L-12 44M0 12L12 44" className="gesture-hint__limb" />
+            <path
+              d="M0 -24V12M0 12L-12 44M0 12L12 44"
+              className="gesture-hint__limb"
+            />
             <g transform="translate(0 -18)">
               <g className="gesture-hint__arm gesture-hint__arm--left">
                 <path d="M0 0L-20 20" className="gesture-hint__limb" />
@@ -31,7 +34,13 @@ export function GestureHint({ gesture }: { gesture: BodyGesture }) {
             <circle cx="0" cy="-38" r="13" className="gesture-hint__head" />
             <circle cx="-4.5" cy="-40" r="1.8" fill="#4a3728" />
             <circle cx="4.5" cy="-40" r="1.8" fill="#4a3728" />
-            <path d="M-5 -34q5 4 10 0" stroke="#4a3728" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+            <path
+              d="M-5 -34q5 4 10 0"
+              stroke="#4a3728"
+              strokeWidth="1.8"
+              fill="none"
+              strokeLinecap="round"
+            />
           </g>
         </g>
       </g>

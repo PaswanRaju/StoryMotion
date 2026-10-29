@@ -27,7 +27,9 @@ vi.mock('../components/gesture/GestureCamera', () => ({
     onPending?: (gesture: BodyGestureEvent['type'] | null) => void;
   }) => (
     <aside>
-      <button onClick={() => onPending?.('ARMS_WIDE')}>Synthetic forming</button>
+      <button onClick={() => onPending?.('ARMS_WIDE')}>
+        Synthetic forming
+      </button>
       <button onClick={() => onPending?.(null)}>Synthetic relaxed</button>
       {(['LEAN_LEFT', 'LEAN_RIGHT', 'ARMS_WIDE', 'CROUCH'] as const).map(
         (type) => (
@@ -73,7 +75,9 @@ const SHIELD_AT = SHIELD.startMs;
 const PATH_AFTER_SHIELD = PATH.startMs - SHIELD.startMs + 100; // plus one tick
 const BOOST_AFTER_PATH = BOOST.startMs - PATH.startMs + 100;
 const NO_INPUT_MS =
-  SCRIPTS.hare.durationMs + MOMENTS.reduce((sum, m) => sum + m.windowMs, 0) + 1000;
+  SCRIPTS.hare.durationMs +
+  MOMENTS.reduce((sum, m) => sum + m.windowMs, 0) +
+  1000;
 const tortoise = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-testid="tortoise-actor"]')!;
 const caption = (text: RegExp) => screen.getByText(text, { selector: 'p' });
@@ -84,7 +88,9 @@ describe('integrated automatic story', () => {
     (story) => {
       const { container } = renderPlayer(story);
       expect(screen.getByRole('img')).toBeInTheDocument();
-      expect(container.querySelector('svg[role="img"], [role="img"] svg')).not.toBeNull();
+      expect(
+        container.querySelector('svg[role="img"], [role="img"] svg'),
+      ).not.toBeNull();
       expect(container.querySelector('img[src], video[src]')).toBeNull();
       expect(screen.queryByText('🎬')).not.toBeInTheDocument();
       const script = SCRIPTS[story as keyof typeof SCRIPTS];
@@ -110,32 +116,47 @@ describe('integrated automatic story', () => {
   it.each([
     ['gesture', 'Synthetic ARMS_WIDE'],
     ['button', 'Use Magic'],
-  ])('ARMS_WIDE by %s raises the shield on Tortoise and closes the invitation', (_, control) => {
-    const { container } = renderPlayer();
-    advance(SHIELD_AT);
-    fireEvent.click(screen.getByRole('button', { name: control }));
-    expect(caption(/Magic shield!/)).toBeInTheDocument();
-    expect(screen.getByText('✨ You did it!')).toBeInTheDocument();
-    expect(tortoise(container).querySelector('.actor-shield')).not.toBeNull();
-    expect(tortoise(container).dataset.state).toBe('magic');
-    expect(container.querySelector('.forest-glow')).not.toBeNull();
-    expect(container.querySelector('.forest-dim')).not.toHaveClass('is-dark');
-    expect(screen.queryByRole('button', { name: 'Use Magic' })).not.toBeInTheDocument();
-    // Holding the pose: the camera sending it again changes nothing.
-    fireEvent.click(screen.getByRole('button', { name: 'Synthetic ARMS_WIDE' }));
-    expect(screen.getAllByText(/Magic shield!/, { selector: 'p' })).toHaveLength(1);
-    advance(2000);
-    expect(tortoise(container).dataset.state).toBe('walk');
-    advance(NO_INPUT_MS);
-    expect(screen.getByText('Story complete')).toBeInTheDocument();
-  });
+  ])(
+    'ARMS_WIDE by %s raises the shield on Tortoise and closes the invitation',
+    (_, control) => {
+      const { container } = renderPlayer();
+      advance(SHIELD_AT);
+      fireEvent.click(screen.getByRole('button', { name: control }));
+      expect(caption(/Magic shield!/)).toBeInTheDocument();
+      expect(screen.getByText('✨ You did it!')).toBeInTheDocument();
+      expect(tortoise(container).querySelector('.actor-shield')).not.toBeNull();
+      expect(tortoise(container).dataset.state).toBe('magic');
+      expect(container.querySelector('.forest-glow')).not.toBeNull();
+      expect(container.querySelector('.forest-dim')).not.toHaveClass('is-dark');
+      expect(
+        screen.queryByRole('button', { name: 'Use Magic' }),
+      ).not.toBeInTheDocument();
+      // Holding the pose: the camera sending it again changes nothing.
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Synthetic ARMS_WIDE' }),
+      );
+      expect(
+        screen.getAllByText(/Magic shield!/, { selector: 'p' }),
+      ).toHaveLength(1);
+      advance(2000);
+      expect(tortoise(container).dataset.state).toBe('walk');
+      advance(NO_INPUT_MS);
+      expect(screen.getByText('Story complete')).toBeInTheDocument();
+    },
+  );
   it('ignores gestures that the current moment does not ask for', () => {
     renderPlayer();
     advance(SHIELD_AT);
-    fireEvent.click(screen.getByRole('button', { name: 'Synthetic LEAN_LEFT' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Synthetic hand raise' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Synthetic LEAN_LEFT' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Synthetic hand raise' }),
+    );
     expect(screen.getByText('Tortoise needs your help!')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Choose Left' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Choose Left' }),
+    ).not.toBeInTheDocument();
   });
   it.each([
     ['LEAN_LEFT', 'Choose Left', 'shady', /Left path chosen!/],
@@ -148,17 +169,27 @@ describe('integrated automatic story', () => {
         advance(SHIELD_AT);
         fireEvent.click(screen.getByRole('button', { name: 'Use Magic' }));
         advance(PATH_AFTER_SHIELD);
-        expect(screen.getByText('Which way should Tortoise go?')).toBeInTheDocument();
+        expect(
+          screen.getByText('Which way should Tortoise go?'),
+        ).toBeInTheDocument();
         expect(tortoise(container).dataset.state).toBe('ponder');
-        expect(container.querySelector('.forest-fork')).toHaveClass('is-asking');
+        expect(container.querySelector('.forest-fork')).toHaveClass(
+          'is-asking',
+        );
         fireEvent.click(screen.getByRole('button', { name: control }));
         expect(caption(text)).toBeInTheDocument();
-        expect(container.querySelector('.forest-fork')).toHaveClass(`chose-${side}`);
-        expect(tortoise(container).querySelector('.actor-lane')).toHaveClass(`lane-${side}`);
+        expect(container.querySelector('.forest-fork')).toHaveClass(
+          `chose-${side}`,
+        );
+        expect(tortoise(container).querySelector('.actor-lane')).toHaveClass(
+          `lane-${side}`,
+        );
         expect(tortoise(container)).toHaveClass(
           side === 'shady' ? 'fx-look-up' : 'fx-look-down',
         );
-        expect(screen.queryByRole('button', { name: button })).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: button }),
+        ).not.toBeInTheDocument();
         unmount();
       }
     },
@@ -172,17 +203,21 @@ describe('integrated automatic story', () => {
       advance(PATH_AFTER_SHIELD);
       fireEvent.click(screen.getByRole('button', { name: 'Choose Right' }));
       advance(BOOST_AFTER_PATH);
-      expect(screen.getByText('Give Tortoise one last boost!')).toBeInTheDocument();
+      expect(
+        screen.getByText('Give Tortoise one last boost!'),
+      ).toBeInTheDocument();
       expect(tortoise(container).dataset.state).toBe('tired');
       fireEvent.click(screen.getByRole('button', { name: control }));
       expect(caption(/A sparkly boost!/)).toBeInTheDocument();
-      expect(container.querySelector('.animated-story')).toHaveClass('has-magic');
+      expect(container.querySelector('.animated-story')).toHaveClass(
+        'has-magic',
+      );
       expect(tortoise(container).dataset.state).toBe('magic');
       advance(2000);
       expect(tortoise(container).dataset.state).toBe('energized');
       advance(4000);
       expect(screen.queryByText(/A sparkly boost!/)).not.toBeInTheDocument();
-      advance(4000); // the last scene: the ending card and its moral
+      advance(4000 + MOMENTS[3].windowMs); // the new clap moment resolves, then the ending card
       expect(container.querySelector('.forest-endcard')).toHaveTextContent(
         'The End — Adventure Complete!',
       );
@@ -211,29 +246,41 @@ describe('integrated automatic story', () => {
     advance(SHIELD_AT - 1000);
     fireEvent.click(screen.getByRole('button', { name: 'Start Camera' }));
     advance(3000);
-    expect(screen.queryByRole('button', { name: 'Use Magic' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Use Magic' }),
+    ).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Camera loaded'));
     advance(200);
-    expect(screen.getByRole('button', { name: 'Use Magic' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Use Magic' }),
+    ).toBeInTheDocument();
     advance(4000);
     fireEvent.click(screen.getByRole('button', { name: 'Start Camera' }));
     advance(200);
-    expect(screen.queryByRole('button', { name: 'Use Magic' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Use Magic' }),
+    ).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Camera loaded'));
     advance(200);
     advance(7400); // a fresh full window after the second setup
-    expect(screen.getByRole('button', { name: 'Use Magic' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Use Magic' }),
+    ).toBeInTheDocument();
   });
   it('resolves a moment that camera setup outlasts and offers the next one in full', () => {
     renderPlayer();
     advance(SHIELD_AT - 1000);
     fireEvent.click(screen.getByRole('button', { name: 'Start Camera' }));
     advance(9400);
-    expect(screen.queryByRole('button', { name: 'Use Magic' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Use Magic' }),
+    ).not.toBeInTheDocument();
     expect(caption(/Tortoise found another way/)).toBeInTheDocument();
     fireEvent.click(screen.getByText('Camera loaded'));
     advance(2400);
-    expect(screen.getByText('Which way should Tortoise go?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Which way should Tortoise go?'),
+    ).toBeInTheDocument();
     advance(6600);
     fireEvent.click(screen.getByRole('button', { name: 'Choose Left' }));
     expect(caption(/Left path chosen!/)).toBeInTheDocument();
@@ -264,7 +311,9 @@ describe('integrated automatic story', () => {
     expect(caption(/Magic shield!/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Restart story' }));
     expect(screen.queryByText(/Magic shield!/)).not.toBeInTheDocument();
-    expect(screen.getByText(/Once upon a time, in a sunny forest/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Once upon a time, in a sunny forest/),
+    ).toBeInTheDocument();
   });
   it('shows "Almost there…" only while a gesture is forming during an invitation', () => {
     renderPlayer();

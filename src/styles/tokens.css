@@ -1,6 +1,7 @@
-/* StoryMotion design tokens — Section 6 of CLAUDE.md. */
+/* StoryMotion design tokens. docs/ART_DIRECTION.md explains every group;
+   src/ui/tokens.ts mirrors the values animation code needs in TypeScript. */
 :root {
-  /* Palette */
+  /* ---------- Storybook base palette (CLAUDE.md §6) ---------- */
   --color-cream: #f7f1df;
   --color-sage: #a9d7a0;
   --color-honey: #f5bf72;
@@ -13,11 +14,20 @@
   --color-honey-dark: #c98f2e;
   --color-sky-dark: #3f84ab;
 
-  /* Cosmic dark theme: deep night sky with starlight text and glowing accents. */
+  /* ---------- Galaxy hub (app chrome) ---------- */
+  --hub-void: #070a24;
+  --hub-deep: #121046;
+  --hub-indigo: #241a6a;
+  --hub-violet: #7b5cff;
+  --hub-pink: #ff6fcf;
+  --hub-cyan: #4fd6ff;
+  --hub-starlight: #fff6d8;
+  --hub-gold: #ffd36e;
+
   --color-bg: #0b0f2e;
   --color-text: #eef0ff;
   --color-heading: #f6f3ff;
-  --color-text-muted: #b4bbe3;
+  --color-text-muted: #b9c0e8;
   --color-surface: rgb(24 26 66 / 78%);
   --color-border: rgb(150 170 255 / 24%);
   --color-focus-ring: #7fd8ff;
@@ -27,10 +37,45 @@
   --color-gold: #ffd36e;
   --color-danger: #c75c4a;
   --color-success: var(--color-sage-dark);
+  /* Dark ink for text that sits on bright candy surfaces (≥ 7:1 on gold/cyan). */
+  --color-ink: #24123a;
 
-  /* Typography */
-  --font-heading: 'Fredoka', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* ---------- Story worlds ---------- */
+  /* Hare: morning forest race */
+  --hare-sky-top: #8fd0f5;
+  --hare-sky-low: #fff0c4;
+  --hare-sun: #ffd25e;
+  --hare-hill-far: #b5d8cf;
+  --hare-hill-near: #8cc584;
+  --hare-tree: #4d9659;
+  --hare-track: #e4bb7c;
+  --hare-shade: #2e5a3c;
+  --hare-accent: #ff8c5a;
+  /* Beanstalk: farm → sky → castle */
+  --bean-field: #f2d596;
+  --bean-sky: #a6dbff;
+  --bean-cloud: #fffdf6;
+  --bean-vine: #3fae5c;
+  --bean-vine-light: #9be37a;
+  --bean-castle: #9a8fc0;
+  --bean-gold: #ffcf3f;
+  --bean-night: #3a2f6e;
+  /* Pigs: countryside → houses → storm */
+  --pigs-meadow: #b5df8a;
+  --pigs-straw: #f1d27a;
+  --pigs-wood: #c08a55;
+  --pigs-brick: #d06b4f;
+  --pigs-sky: #bfe5ff;
+  --pigs-storm: #59648c;
+  --pigs-blush: #ffa4b6;
+
+  /* ---------- Typography (self-hosted via @fontsource-variable) ---------- */
+  --font-heading:
+    'Fredoka Variable', 'Fredoka', ui-rounded, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --font-body:
+    'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
 
   --fs-xs: 0.875rem;
   --fs-sm: 1rem;
@@ -38,8 +83,11 @@
   --fs-lg: 1.5rem;
   --fs-xl: 2rem;
   --fs-2xl: 2.75rem;
+  --fs-display: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  /* Captions are read from across the room. */
+  --fs-caption: clamp(1.25rem, 1vw + 1rem, 1.75rem);
 
-  /* Spacing */
+  /* ---------- Spacing ---------- */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -47,21 +95,80 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-8: 3rem;
+  --space-10: 4rem;
 
-  /* Shape */
+  /* ---------- Shape ---------- */
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
+  --radius-xl: 2.25rem;
   --radius-pill: 999px;
 
-  /* Controls */
-  --control-min: 44px;
+  /* ---------- Controls ---------- */
+  --control-min: 44px; /* grown-up only (settings, editor) */
+  --control-md: 52px;
+  --control-child: 64px; /* anything a child taps */
+  --control-hero: 88px; /* the one big action on a screen */
 
-  /* Motion */
+  /* ---------- Depth: soft shadows, raised edges, rim light ---------- */
+  --shadow-soft: 0 10px 30px -14px rgb(4 6 30 / 60%);
+  --shadow-float:
+    0 24px 60px -24px rgb(4 6 30 / 75%), 0 6px 16px -8px rgb(4 6 30 / 40%);
+  --shadow-contact: 0 14px 10px -12px rgb(0 0 0 / 45%);
+  --rim-light:
+    inset 0 1px 0 rgb(255 255 255 / 45%), inset 0 -2px 0 rgb(0 0 0 / 12%);
+  --edge-depth: 6px; /* height of the raised "candy" bottom edge */
+
+  /* ---------- Glow (box-shadow glows, never filter: blur) ---------- */
+  --glow-gold: 0 0 0 6px rgb(255 211 110 / 18%), 0 0 28px rgb(255 190 90 / 45%);
+  --glow-cyan: 0 0 0 6px rgb(79 214 255 / 18%), 0 0 28px rgb(79 214 255 / 45%);
+  --glow-violet:
+    0 0 0 6px rgb(155 123 255 / 20%), 0 0 30px rgb(155 123 255 / 50%);
+  --glow-focus: 0 0 0 4px var(--hub-void), 0 0 0 8px var(--color-focus-ring);
+
+  /* ---------- Motion ---------- */
+  --duration-instant: 90ms;
   --duration-fast: 150ms;
-  --duration-base: 250ms;
-  --duration-slow: 500ms;
+  --duration-base: 260ms;
+  --duration-slow: 480ms;
+  --duration-scene: 900ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Overshoot then settle: entrances, pops. */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Pull back before moving: anticipation. */
+  --ease-anticipate: cubic-bezier(0.36, 0, 0.66, -0.56);
+  /* Physical spring with follow-through wobble. Falls back to `ease` where
+     linear() is unsupported. */
+  --ease-spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141,
+    0.281 6.7%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017,
+    1.077,
+    1.121,
+    1.149 24.3%,
+    1.159,
+    1.163,
+    1.161,
+    1.154 29.9%,
+    1.129 32.8%,
+    1.051 39.6%,
+    1.017 43.1%,
+    0.991,
+    0.977 51%,
+    0.974 53.8%,
+    0.975 57.1%,
+    0.997 69.8%,
+    1.003 76.9%,
+    1.004 83.8%,
+    1
+  );
+  --duration-spring: 620ms;
 
   /* Breakpoints (reference values; used in media queries directly) */
   --breakpoint-tablet: 768px;
@@ -76,8 +183,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --duration-instant: 0ms;
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
+    --duration-scene: 0ms;
+    --duration-spring: 0ms;
   }
+}
+[data-reduced-motion='true'] {
+  --duration-instant: 0ms;
+  --duration-fast: 0ms;
+  --duration-base: 0ms;
+  --duration-slow: 0ms;
+  --duration-scene: 0ms;
+  --duration-spring: 0ms;
 }

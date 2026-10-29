@@ -1,3 +1,4 @@
+import { LibraryShelf } from '../../platform/LibraryShelf';
 import { Link, useNavigate } from 'react-router-dom';
 import { StoryGrid } from './StoryGrid';
 import { storyRegistry } from '../../data/stories/registry';
@@ -12,7 +13,7 @@ export function StoryLibraryPage() {
     const story = storyRegistry.find((candidate) => candidate.id === storyId);
     if (story && story.characters.length === 1) {
       setCharacterId(story.characters[0].id);
-      void navigate(routes.player(storyId));
+      void navigate(routes.cameraSetup(storyId));
     } else void navigate(routes.characterSelect(storyId));
   };
 
@@ -23,19 +24,21 @@ export function StoryLibraryPage() {
           <p className="eyebrow">Choose your adventure</p>
           <h2>Story Library</h2>
           <p className="library__sub">
-            Every story is open and ready to play. Watch, move, and make the magic happen!
+            Every story is open and ready to play. Watch, move, and make the
+            magic happen!
           </p>
         </div>
         <p className="library__mode">
-          Playing: <strong>{mode === 'family' ? 'Family Adventure' : 'Solo Adventure'}</strong>
+          Playing:{' '}
+          <strong>
+            {mode === 'family' ? 'Family Adventure' : 'Solo Adventure'}
+          </strong>
           {' · '}
           <Link to={routes.home()}>Change</Link>
         </p>
       </header>
-      <StoryGrid
-        stories={storyRegistry}
-        onSelect={choose}
-      />
+      <LibraryShelf />
+      <StoryGrid stories={storyRegistry} onSelect={choose} />
     </section>
   );
 }

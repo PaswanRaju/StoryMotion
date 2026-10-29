@@ -4,44 +4,19 @@
 }
 .character-select__sub {
   margin: 4px 0 var(--space-5);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--color-text-muted);
-}
-.character-select .eyebrow {
-  margin: 0 0 4px;
-  font-family: var(--font-heading);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #b0701a;
 }
 .character-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
   justify-content: center;
-  gap: 24px;
+  gap: var(--space-6);
 }
+/* ui-card--select supplies the frame, glow, check and focus ring. */
 .character-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 14px 20px;
-  border: 3px solid rgb(255 255 255 / 90%);
-  border-radius: 30px;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
   text-align: center;
-  background: rgb(255 255 255 / 72%);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 18px 40px -20px rgb(58 38 20 / 45%);
-  animation: card-reveal 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  transition:
-    translate 250ms cubic-bezier(0.3, 1.4, 0.5, 1),
-    box-shadow 250ms ease,
-    border-color 250ms ease;
+  animation: ui-pop-in var(--duration-spring) var(--ease-spring) both;
 }
 .character-card:nth-child(2) {
   animation-delay: 120ms;
@@ -49,42 +24,26 @@
 .character-card:nth-child(3) {
   animation-delay: 240ms;
 }
-@keyframes card-reveal {
-  from {
-    opacity: 0;
-    translate: 0 30px;
-    scale: 0.96;
-  }
+.character-card .ui-card__art {
+  aspect-ratio: auto;
+  height: 220px;
 }
-.character-card:hover {
-  translate: 0 -6px;
-}
-.character-card:focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 4px;
-}
-.character-card.is-selected {
-  border-color: #ffd36e;
-  box-shadow:
-    0 0 0 4px rgb(255 211 110 / 55%),
-    0 24px 50px -20px rgb(58 38 20 / 50%),
-    0 0 60px rgb(255 211 110 / 45%);
+.character-card .ui-card__body {
+  align-items: center;
 }
 .character-card__stage {
-  position: relative;
-  width: 100%;
-  height: 210px;
-  overflow: hidden;
-  border-radius: 22px;
-  background:
-    radial-gradient(ellipse 70% 40% at 50% 100%, #8fcb72 0 60%, transparent 61%),
-    linear-gradient(180deg, #a9dcf5, #e9f7ef);
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 40% at 50% 100%,
+    rgb(120 190 100 / 85%) 0 60%,
+    transparent 61%
+  );
 }
 .character-card__stage .art-stage {
-  height: 88%;
-  padding-top: 12%;
   position: absolute;
   inset: auto 0 6% 0;
+  height: 88%;
 }
 .character-card__stage .art-stage > * {
   height: 100%;
@@ -93,6 +52,7 @@
   height: 100%;
   width: auto;
 }
+/* Rim light behind the character: a pre-rendered radial glow. */
 .character-card__glow {
   position: absolute;
   left: 50%;
@@ -102,8 +62,10 @@
   translate: -50% -50%;
   border-radius: 50%;
   background: radial-gradient(circle, rgb(255 246 207 / 90%), transparent 65%);
-  opacity: 0.6;
-  transition: opacity 300ms ease, scale 300ms ease;
+  opacity: 0.55;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    scale var(--duration-spring) var(--ease-spring);
 }
 .character-card:hover .character-card__glow,
 .character-card.is-selected .character-card__glow {
@@ -114,37 +76,22 @@
 .character-card.is-selected .art-stage > * {
   animation: char-hop 0.7s cubic-bezier(0.3, 0, 0.4, 1) 1;
 }
+/* Anticipation squash, hop, landing squash, settle. */
 @keyframes char-hop {
-  40% {
-    translate: 0 -18px;
-    scale: 0.97 1.04;
-  }
-  70% {
+  15% {
     translate: 0 0;
-    scale: 1.04 0.96;
+    scale: 1.05 0.94;
   }
-}
-.character-card__check {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  color: #fffaf0;
-  background: #4cc96e;
-  box-shadow: 0 4px 12px rgb(76 201 110 / 50%);
-  animation: check-pop 400ms cubic-bezier(0.2, 0.9, 0.3, 1.6) both;
-}
-@keyframes check-pop {
-  from {
-    scale: 0;
+  45% {
+    translate: 0 -20px;
+    scale: 0.96 1.05;
+  }
+  75% {
+    translate: 0 0;
+    scale: 1.06 0.94;
   }
 }
 .character-card__name {
-  margin-top: 6px;
   font-family: var(--font-heading);
   font-size: 1.6rem;
   font-weight: 600;
@@ -153,23 +100,29 @@
   color: var(--color-text-muted);
 }
 .character-card__pick {
-  margin-top: 6px;
-  padding: 4px 14px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 13px;
-  background: #fff4dc;
-  border: 1px solid #f1d9a8;
-  color: #7a5226;
+  margin-top: 4px;
+  padding: 4px 16px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  background: rgb(255 255 255 / 10%);
+  box-shadow: inset 0 0 0 1.5px rgb(170 190 255 / 30%);
 }
 .character-card.is-selected .character-card__pick {
-  background: #ffd36e;
-  color: #4a2f12;
+  color: var(--color-ink);
+  background: linear-gradient(180deg, #fff3c4, var(--hub-gold));
 }
 @media (prefers-reduced-motion: reduce) {
-  .character-card,
-  .character-card * {
-    animation: none !important;
-    transition: none !important;
+  .character-card {
+    animation-name: ui-fade-in;
   }
+  .character-card .art-stage > * {
+    animation: none !important;
+  }
+  .character-card__glow {
+    scale: none !important;
+  }
+}
+[data-reduced-motion='true'] .character-card .art-stage > * {
+  animation: none !important;
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { StoryId } from '../../engine/types';
 import type { MomentId } from '../../data/stories/scenes';
 import { sceneAt, storyMoments, STORY_SCENES } from '../../data/stories/scenes';
+import { stories } from '../../stories';
 import { playSfx } from '../../audio/sfx';
 import type { Outcome } from '../forest/characterState';
 import { ease, useStoryClock, wave } from './clock';
@@ -24,9 +25,10 @@ const FADE_IN = 700;
 const FADE_OUT = 450;
 
 const reducedMotion = () =>
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.documentElement.dataset.reducedMotion === 'true' ||
+  (typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 /**
  * Renders the scene-based stories (Jack and the Beanstalk, The Three Little Pigs).
@@ -53,7 +55,8 @@ export function StorybookScene({
   const active = sceneAt(storyId, time);
   const def = STORYBOOK_SCENES[active.scene.id];
   const moments = storyMoments(storyId);
-  const open: MomentId | null = openMoment === null ? null : (moments[openMoment]?.id ?? null);
+  const open: MomentId | null =
+    openMoment === null ? null : (moments[openMoment]?.id ?? null);
   const ctx: SceneCtx = {
     t: active.local,
     idle,
@@ -69,11 +72,21 @@ export function StorybookScene({
   const last = useRef({ scene: '', t: 0 });
   useEffect(() => {
     const prev = last.current;
-    const cues = def?.cues ?? [];
-    if (prev.scene === active.scene.id && ctx.t > prev.t && ctx.t - prev.t < 1500)
-      for (const [at, cue] of cues) if (at > prev.t && at <= ctx.t) playSfx(cue);
+    const cues =
+      stories[storyId].scenes.find((scene) => scene.id === active.scene.id)
+        ?.soundEffects ?? [];
+    if (
+      prev.scene === active.scene.id &&
+      ctx.t > prev.t &&
+      ctx.t - prev.t < 1500
+    )
+      for (const { atMs, assetId } of cues)
+        if (atMs > prev.t && atMs <= ctx.t)
+          playSfx(assetId as Parameters<typeof playSfx>[0]);
     if (prev.scene !== active.scene.id)
-      for (const [at, cue] of cues) if (at <= ctx.t && ctx.t < 400) playSfx(cue);
+      for (const { atMs, assetId } of cues)
+        if (atMs <= ctx.t && ctx.t < 400)
+          playSfx(assetId as Parameters<typeof playSfx>[0]);
     last.current = { scene: active.scene.id, t: ctx.t };
   });
 
@@ -122,7 +135,13 @@ export function StorybookScene({
       aria-label={`${active.scene.title}: ${active.scene.narration}`}
     >
       <div ref={stage} className="sb-stage">
-        <svg className="sb-root" viewBox="0 0 1920 1080" width="1920" height="1080" aria-hidden="true">
+        <svg
+          className="sb-root"
+          viewBox="0 0 1920 1080"
+          width="1920"
+          height="1080"
+          aria-hidden="true"
+        >
           <CastDefs />
           {/* Camera: zoom about (cx, cy), plus a little shake on big impacts. */}
           <g
@@ -130,7 +149,9 @@ export function StorybookScene({
           >
             {def?.render(ctx)}
           </g>
-          {fade > 0.001 && <rect width="1920" height="1080" fill="#120d1e" opacity={fade} />}
+          {fade > 0.001 && (
+            <rect width="1920" height="1080" fill="#120d1e" opacity={fade} />
+          )}
         </svg>
         <div className="forest-vignette" />
         <div className="forest-letterbox" aria-hidden="true">
@@ -146,7 +167,10 @@ export function StorybookScene({
           </div>
         )}
         {isLast && ctx.t >= endcardAt && (
-          <div className="forest-endcard sb-endcard" data-testid="story-endcard">
+          <div
+            className="forest-endcard sb-endcard"
+            data-testid="story-endcard"
+          >
             <span className="forest-endcard__stars">★ ★ ★</span>
             <strong>The End</strong>
             <span>Adventure Complete!</span>

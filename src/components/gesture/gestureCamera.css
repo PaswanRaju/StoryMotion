@@ -20,14 +20,6 @@
   gap: 8px;
   margin-bottom: 12px;
 }
-.gesture-camera button {
-  min-height: 48px;
-  padding: 10px 14px;
-  cursor: pointer;
-}
-.gesture-camera button:disabled {
-  cursor: default;
-}
 .gesture-camera p {
   margin: 12px 0;
 }
@@ -70,11 +62,82 @@
   grid-template-columns: auto 1fr;
   gap: 2px 8px;
   margin: 8px 0;
-  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    12px/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 }
 .pose-debug-stats dt {
   opacity: 0.7;
 }
 .pose-debug-stats dd {
   margin: 0;
+}
+
+.gesture-hold-ring {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.gesture-camera video {
+  display: none !important;
+}
+.shadow-buddy {
+  position: relative;
+  width: 124px;
+  height: 108px;
+  margin: 6px auto;
+  border-radius: 50%;
+  background: #172554;
+  box-shadow: 0 0 16px #67e8f955;
+}
+.shadow-buddy canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.shadow-buddy__smile {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  color: #fde68a;
+  font-size: 20px;
+}
+.shadow-buddy .gesture-hold-ring {
+  position: absolute;
+  inset: -7px;
+  width: calc(100% + 14px);
+  height: calc(100% + 14px);
+  margin: 0;
+  color: #a5f3fc;
+}
+.camera-loading span {
+  display: inline-block;
+  animation: camera-star 2s ease-in-out infinite;
+  color: #fde68a;
+}
+.camera-privacy {
+  font-size: 12px;
+}
+@keyframes camera-star {
+  50% {
+    rotate: 180deg;
+    scale: 1.2;
+  }
+}
+.buddy-corner {
+  position: absolute;
+  z-index: 2;
+  left: 12px;
+  top: 12px;
+  pointer-events: none;
+}
+.buddy-corner .shadow-buddy {
+  width: 80px;
+  height: 68px;
+  margin: 0;
+  background: #172554dd;
 }

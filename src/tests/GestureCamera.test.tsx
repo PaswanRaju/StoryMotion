@@ -68,9 +68,7 @@ it('shows lower-body availability and removes stale readiness when tracking disa
     options.onTracking?.({ ...tracking, upperBody: false });
   });
   expect(screen.getByText(/Move into view/)).toBeInTheDocument();
-  expect(
-    screen.queryByText(/Upper body detected/),
-  ).not.toBeInTheDocument();
+  expect(screen.queryByText(/Upper body detected/)).not.toBeInTheDocument();
 });
 it('requires both the debug URL and an explicit checkbox to enable the skeleton', () => {
   history.replaceState(null, '', '/library/hare/play?debugPose=1');
@@ -105,4 +103,28 @@ it('reports a forming gesture only when it changes, and shows friendly progress'
   act(() => options.onTracking?.({ ...tracking, pending: null }));
   expect(onPending.mock.calls).toEqual([['ARMS_WIDE'], [null]]);
   expect(screen.queryByText(/almost there/)).not.toBeInTheDocument();
+});
+
+it('exposes hold progress as a progress ring and hides it outside interaction windows', () => {
+  const props = { onAction: vi.fn(), recognitionEnabled: true };
+  const view = render(<GestureCamera {...props} />);
+  act(() => {
+    options.onStatus('tracking');
+    options.onTracking?.({
+      landmarkCount: 33,
+      upperBody: true,
+      calibrated: true,
+      legsVisible: false,
+      crouchAvailable: false,
+      headDirection: 'forward',
+      pending: 'HAND_RAISE',
+      progress: 0.5,
+    });
+  });
+  expect(
+    screen.getByRole('progressbar', { name: 'Gesture hold progress' }),
+  ).toHaveAttribute('aria-valuenow', '50');
+  expect(screen.getByText(/Use the button for crouching/)).toBeInTheDocument();
+  view.rerender(<GestureCamera {...props} recognitionEnabled={false} />);
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
 });

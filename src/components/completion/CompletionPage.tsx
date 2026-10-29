@@ -1,3 +1,4 @@
+import { CompletionRecap } from '../../platform/CompletionRecap';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { playSfx } from '../../audio/sfx';
@@ -6,13 +7,21 @@ import { StoryNotFound } from '../library/StoryNotFound';
 import { useSession } from '../../app/SessionContext';
 import { routes } from '../../app/router';
 import { RewardBadge } from './RewardBadge';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { BookOpen, RotateCcw } from 'lucide-react';
+import { Button, Panel, useToast } from '../../ui';
 import { Hare, Tortoise } from '../../rendering/forest/characters';
 import '../../rendering/forest/forest.css';
 import { CompletionCast } from './CompletionCast';
 import './completion.css';
 
-const CONFETTI = ['#e8775f', '#f5bf72', '#7fb8de', '#a9d7a0', '#d99ad0', '#fff4c2'];
+const CONFETTI = [
+  '#e8775f',
+  '#f5bf72',
+  '#7fb8de',
+  '#a9d7a0',
+  '#d99ad0',
+  '#fff4c2',
+];
 /** Deterministic confetti layout (no randomness during render). */
 const PIECES = Array.from({ length: 36 }, (_, i) => ({
   left: (i * 37) % 100,
@@ -26,12 +35,18 @@ export function CompletionPage() {
   const { storyId } = useParams<{ storyId: string }>();
   const navigate = useNavigate();
   const { mode, characterId, setCharacterId } = useSession();
+  const toast = useToast();
 
   const story = storyId ? getStoryById(storyId) : undefined;
   // One fanfare on arrival (sfx.ts drops StrictMode's immediate duplicate).
   useEffect(() => {
-    if (story) playSfx('celebrate');
-  }, [story]);
+    if (!story) return;
+    playSfx('celebrate');
+    toast.show('New sticker added to your collection!', {
+      icon: '🌟',
+      tone: 'magic',
+    });
+  }, [story, toast]);
   if (!story) {
     return <StoryNotFound />;
   }
@@ -57,6 +72,7 @@ export function CompletionPage() {
 
   return (
     <section className="completion">
+      <CompletionRecap storyId={story.id} />
       <div className="completion-stage">
         <div className="completion-rays" aria-hidden="true" />
         <div className="completion-confetti" aria-hidden="true">
@@ -95,30 +111,37 @@ export function CompletionPage() {
         <p className="completion-moral">"{story.moral}"</p>
       </div>
 
-      <RewardBadge title={story.badge.title} description={story.badge.description} />
+      <RewardBadge
+        title={story.badge.title}
+        description={story.badge.description}
+      />
 
       {mode === 'family' && (
-        <div className="card" style={{ background: 'var(--color-sky)', border: 'none' }}>
+        <Panel variant="scroll" className="family-note">
           <h3>Family Reflection</h3>
-          <p style={{ margin: 0 }}>
+          <p>
             What was your favorite part of the story? Talk about it together
             before you pick the next adventure!
           </p>
-        </div>
+        </Panel>
       )}
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 'var(--space-3)',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        <PrimaryButton variant="secondary" onClick={playAgain}>
+      <div className="ui-row ui-row--center">
+        <Button
+          variant="secondary"
+          icon={<RotateCcw size={24} />}
+          onClick={playAgain}
+        >
           Play This Story Again
-        </PrimaryButton>
-        <PrimaryButton onClick={anotherStory}>Choose Another Story</PrimaryButton>
+        </Button>
+        <Button
+          size="xl"
+          sfx="start"
+          icon={<BookOpen size={28} />}
+          onClick={anotherStory}
+        >
+          Choose Another Story
+        </Button>
       </div>
     </section>
   );

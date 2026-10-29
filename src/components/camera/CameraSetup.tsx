@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CameraPreview, type CameraPreviewState } from './CameraPreview';
 import { PoseStatus } from './PoseStatus';
-import { PrimaryButton } from '../layout/PrimaryButton';
+import { Button } from '../../ui';
 
 type CameraSetupProps = {
   onContinue: () => void;
@@ -46,8 +46,8 @@ export function CameraSetup({ onContinue, onBack }: CameraSetupProps) {
       </div>
 
       <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--fs-xs)' }}>
-        Safety check: make sure you have clear space around you to move
-        before you start.
+        Safety check: make sure you have clear space around you to move before
+        you start.
       </p>
 
       <div
@@ -59,14 +59,14 @@ export function CameraSetup({ onContinue, onBack }: CameraSetupProps) {
         }}
       >
         {(state === 'idle' || state === 'denied') && (
-          <PrimaryButton onClick={requestCamera}>
+          <Button onClick={requestCamera}>
             {state === 'denied' ? 'Retry Camera' : 'Allow Camera'}
-          </PrimaryButton>
+          </Button>
         )}
         {state !== 'skipped' && state !== 'granted' && (
-          <PrimaryButton variant="secondary" onClick={() => setState('skipped')}>
+          <Button variant="secondary" onClick={() => setState('skipped')}>
             Play without camera
-          </PrimaryButton>
+          </Button>
         )}
       </div>
 
@@ -77,12 +77,12 @@ export function CameraSetup({ onContinue, onBack }: CameraSetupProps) {
           marginTop: 'var(--space-6)',
         }}
       >
-        <PrimaryButton variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={onBack}>
           Back
-        </PrimaryButton>
-        <PrimaryButton disabled={!ready} onClick={onContinue}>
+        </Button>
+        <Button disabled={!ready} onClick={onContinue}>
           Continue
-        </PrimaryButton>
+        </Button>
       </div>
     </section>
   );

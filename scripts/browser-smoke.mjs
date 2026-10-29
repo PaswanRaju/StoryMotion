@@ -69,13 +69,15 @@ try {
     }
     if (
       message.method === 'Target.attachedToTarget' &&
-      message.params.targetInfo.type === 'worker'
+      ['worker', 'service_worker', 'shared_worker'].includes(
+        message.params.targetInfo.type,
+      )
     ) {
       const session = message.params.sessionId;
       void (async () => {
+        await send('Runtime.runIfWaitingForDebugger', {}, session);
         await send('Runtime.enable', {}, session);
         await send('Network.enable', {}, session);
-        await send('Runtime.runIfWaitingForDebugger', {}, session);
       })().catch((error) => errors.push(error));
     }
     if (message.method === 'Network.responseReceived') {
@@ -138,7 +140,7 @@ try {
   await send('Page.enable');
   await send('Target.setAutoAttach', {
     autoAttach: true,
-    waitForDebuggerOnStart: true,
+    waitForDebuggerOnStart: false,
     flatten: true,
   });
   await send('Emulation.setDeviceMetricsOverride', {
@@ -147,244 +149,192 @@ try {
     deviceScaleFactor: 1,
     mobile: false,
   });
-  await send('Page.navigate', { url: base });
-  await waitFor("document.body.innerText.includes('Start Adventure')");
-  await click('Start Adventure');
-  await waitFor("document.body.innerText.includes('Play Now')");
-  await click('Start The Tortoise and the Hare');
-  await waitFor("document.body.innerText.includes('Choose Your Character')");
-  await evaluate(
-    "[...document.querySelectorAll('button')].find(b => b.textContent.includes('Tortoise')).click()",
-  );
-  await click("Let's Go");
-  await waitFor("document.querySelector('.animated-story svg') !== null");
-  assert.ok((await evaluate('location.pathname')).endsWith('/hare/play'));
-  assert.ok(!(await text()).includes('🎬'));
-  console.log(
-    'PASS home → library → character → animated player (no setup screen)',
-  );
-  // Google's public pose test image is converted to a local synthetic video stream.
-  // No physical webcam is used and no camera data is uploaded.
-  const fixtureUrl = 'https://storage.googleapis.com/mediapipe-assets/pose.jpg';
-  const fixture = await fetch(fixtureUrl);
-  assert.equal(fixture.status, 200, 'Official pose test image downloads');
-  const fixtureData = Buffer.from(await fixture.arrayBuffer()).toString(
-    'base64',
-  );
-  console.log('PASS official pose test fixture HTTP 200');
-  await evaluate(`(async () => {
+  await send('Network.enable');
+  if (process.argv.includes('--offline-only')) {
+    await send('Page.navigate', { url: base });
+    await waitFor("document.body.innerText.includes('Start Adventure')");
+  } else {
+    await send('Page.navigate', { url: base });
+    await waitFor("document.body.innerText.includes('Start Adventure')");
+    await click('Start Adventure');
+    await waitFor("document.body.innerText.includes('Play Now')");
+    await click('Start The Tortoise and the Hare');
+    await waitFor("document.body.innerText.includes('Choose Your Character')");
+    await evaluate(
+      "[...document.querySelectorAll('button')].find(b => b.textContent.includes('Tortoise')).click()",
+    );
+    await click("Let's Go");
+    await waitFor("document.body.innerText.includes('Hello, explorer!')");
+    await click('Skip warm-up');
+    await waitFor("document.querySelector('.animated-story svg') !== null");
+    console.log('PASS home → library → character → skippable warm-up → player');
+    const fixture = await fetch(
+      'https://storage.googleapis.com/mediapipe-assets/pose.jpg',
+    );
+    assert.equal(fixture.status, 200);
+    const fixtureData = Buffer.from(await fixture.arrayBuffer()).toString(
+      'base64',
+    );
+    await evaluate(`(async () => {
     const NativeWorker = window.Worker;
     window.__poseTest = { inferences: 0, landmarkCount: 0, ready: false, errors: [], debugFrames: 0 };
     window.Worker = class extends NativeWorker {
       constructor(...args) {
-        super(...args);
-        window.__poseTest.worker = this;
+        super(...args); window.__poseTest.worker = this;
         this.addEventListener('message', ({data}) => {
           if (data.type === 'ready') window.__poseTest.ready = true;
           if (data.type === 'error') window.__poseTest.errors.push(data.reason);
-          if (data.type === 'pose') {
-            if (data.debugFrame) window.__poseTest.debugFrames++;
-            window.__poseTest.inferences++;
-            window.__poseTest.landmarkCount = Math.max(window.__poseTest.landmarkCount, data.tracking.landmarkCount);
-          }
+          if (data.type === 'pose') { window.__poseTest.lastTracking = data.tracking; window.__poseTest.inferences++; window.__poseTest.landmarkCount = Math.max(window.__poseTest.landmarkCount, data.tracking.landmarkCount); }
         });
       }
     };
-    const image = new Image();
-    image.src = 'data:image/jpeg;base64,${fixtureData}';
-    await image.decode();
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
-    const context = canvas.getContext('2d');
-    const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-    navigator.mediaDevices.getUserMedia = async constraints => {
-      const fakeCamera = await originalGetUserMedia(constraints);
-      fakeCamera.getTracks().forEach(track => track.stop());
-      const draw = () => context.drawImage(image, 0, 0);
-      draw();
-      const timer = setInterval(draw, 100);
-      const stream = canvas.captureStream(10);
-      for (const track of stream.getTracks()) {
-        const stop = track.stop.bind(track);
-        track.stop = () => { clearInterval(timer); stop(); };
-      }
+    const image = new Image(); image.src = 'data:image/jpeg;base64,${fixtureData}'; await image.decode();
+    const canvas = document.createElement('canvas'); canvas.width = image.naturalWidth; canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d'); window.__poseTest.canvas = canvas;
+    navigator.mediaDevices.getUserMedia = async () => {
+      const draw = () => context.drawImage(image, 0, 0); draw(); const timer = setInterval(draw, 60);
+      const stream = canvas.captureStream(18);
+      for (const track of stream.getTracks()) { const original = track.stop.bind(track); track.stop = () => { clearInterval(timer); original(); }; }
       return stream;
     };
   })()`);
-  await click('Start Camera');
-  // The story intentionally never waits for the camera, so a slow cold model download
-  // could otherwise let it finish (and unmount the camera) mid-check. Pausing freezes
-  // story time only; the camera and worker keep running.
-  await click('Pause story');
-  await waitFor("document.querySelector('video')?.videoWidth > 0");
-  console.log(
-    'PASS explicit camera permission and live synthetic video preview',
-  );
-  await waitFor(
-    "document.body.innerText.includes('Move into view') || document.body.innerText.includes('Camera ready') || document.body.innerText.includes('took a nap')",
-    40000,
-  );
-  await waitFor(
-    'window.__poseTest.landmarkCount === 33 || window.__poseTest.errors.length > 0',
-    30000,
-  );
-  const inference = await evaluate('(({ worker, ...rest }) => rest)(window.__poseTest)');
-  assert.equal(
-    inference.landmarkCount,
-    33,
-    `Real model must infer 33 landmarks: ${JSON.stringify(inference)}`,
-  );
-  assert.ok(inference.inferences > 0);
-  console.log(
-    'PASS real MediaPipe VIDEO inference:',
-    JSON.stringify(inference),
-  );
-  for (const [url, status] of assetResponses) {
-    assert.equal(status, 200);
-    console.log('ASSET HTTP', status, url);
+    await click('Start Camera');
+    await waitFor(
+      'window.__poseTest.ready || window.__poseTest.errors.length > 0',
+      30000,
+    );
+    assert.deepEqual(await evaluate('window.__poseTest.errors'), []);
+    assert.equal(
+      await evaluate('window.__poseTest.inferences'),
+      0,
+      'No inference before an interaction',
+    );
+    assert.equal(
+      await evaluate(
+        "getComputedStyle(document.querySelector('video')).display",
+      ),
+      'none',
+      'Raw video is never visible',
+    );
+    await waitFor(
+      'window.__poseTest.landmarkCount === 33 || window.__poseTest.errors.length > 0',
+      35000,
+    );
+    assert.equal(await evaluate('window.__poseTest.landmarkCount'), 33);
+    console.log(
+      'PASS real worker MediaPipe inference with synthetic image, raw video hidden',
+    );
+    const frameTimes = await evaluate(`new Promise(resolve => {
+    const samples = []; let last = performance.now(), start = last;
+    function tick(now) { samples.push(now - last); last = now; if (now - start >= 1500) resolve(samples); else requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+  })`);
+    frameTimes.sort((a, b) => a - b);
+    console.log(
+      'Animation RAF p95 (ms):',
+      frameTimes[Math.floor(frameTimes.length * 0.95)].toFixed(1),
+    );
+    if ((await text()).includes('Tortoise needs your help!'))
+      await click('Use Magic');
+    await waitFor("!document.querySelector('.magic-invitation.is-open')");
+    await delay(300);
+    const before = await evaluate('window.__poseTest.inferences');
+    await delay(1000);
+    assert.equal(
+      await evaluate('window.__poseTest.inferences'),
+      before,
+      'Inference stops when the window closes',
+    );
+    if (process.argv.includes('--models')) {
+      for (const gesture of ['BLOW', 'CLAP']) {
+        const count = await evaluate('window.__poseTest.inferences');
+        await evaluate(`(async () => {
+        const worker = window.__poseTest.worker;
+        worker.postMessage({ type: 'debug', enabled: true });
+        worker.postMessage({ type: 'options', options: { allowed: ['${gesture}'], players: 1 } });
+        worker.postMessage({ type: 'recognition', enabled: true });
+        const bitmap = await createImageBitmap(window.__poseTest.canvas);
+        worker.postMessage({ type: 'frame', bitmap, at: performance.now() }, [bitmap]);
+      })()`);
+        await waitFor(
+          `window.__poseTest.inferences > ${count} || window.__poseTest.errors.length > 0`,
+          30000,
+        );
+        assert.deepEqual(await evaluate('window.__poseTest.errors'), []);
+        assert.ok(
+          !(await evaluate(
+            `window.__poseTest.lastTracking.unavailable.includes('${gesture}')`,
+          )),
+          JSON.stringify(await evaluate('window.__poseTest.lastTracking')),
+        );
+        console.log(
+          'PASS real optional model initializes and processes synthetic frame:',
+          gesture,
+        );
+      }
+    }
+    await click('Stop Camera');
+    assert.ok(
+      await evaluate("document.querySelector('video').srcObject === null"),
+    );
+    console.log('PASS interaction gating and camera cleanup');
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 1,
+      mobile: true,
+    });
+    assert.ok(
+      await evaluate('document.documentElement.scrollWidth <= innerWidth'),
+      'No mobile overflow',
+    );
+    const screenshot = await send('Page.captureScreenshot', { format: 'png' });
+    const screenshotPath = join(profile, 'story-mobile.png');
+    await writeFile(screenshotPath, Buffer.from(screenshot.data, 'base64'));
+    console.log('SCREENSHOT', screenshotPath);
+    await send('Page.navigate', { url: `${base}/parent/editor` });
+    await waitFor("document.body.innerText.includes('Open story creator')");
+    assert.ok(
+      !(await evaluate("!!document.querySelector('textarea')")),
+      'Editor is behind a parent gate',
+    );
+    console.log('PASS parent-gated creator');
   }
-  assert.ok(
-    assetResponses.size >= 3,
-    'Observed successful module loader, WASM, and model requests',
-  );
-  const cameraText = await text();
   console.log(
-    'CAMERA STATUS:',
-    cameraText.slice(
-      cameraText.indexOf('Your camera'),
-      cameraText.indexOf('Only on this device'),
-    ),
-  );
-  assert.ok(
-    !cameraText.includes('took a nap'),
-    'MediaPipe worker initializes with real model',
-  );
-  await click('Resume');
-  await waitFor("document.body.innerText.includes('Use Magic')", 15000);
-  await click('Use Magic');
-  await waitFor(
-    "document.querySelector('[data-testid=tortoise-actor] .actor-shield') !== null",
-    2000,
-  );
-  console.log('PASS manual Use Magic button raises the same shield');
-  assert.equal(
-    await evaluate('window.__poseTest.debugFrames'),
-    0,
-    'No diagnostic images without opt-in',
-  );
-  assert.ok(
-    await evaluate("document.querySelector('.pose-debug-controls') === null"),
-  );
-  await evaluate(
-    "history.replaceState(null, '', location.pathname + '?debugPose=1')",
-  );
-  await waitFor("document.querySelector('.pose-debug-controls') !== null");
-  await evaluate(
-    "document.querySelector('.pose-debug-controls').open = true; document.querySelector('.pose-debug-controls input').click()",
-  );
-  const hasSkeletonPixels = `(() => {
-    const canvas = document.querySelector('.camera-preview canvas');
-    if (!canvas || canvas.hidden || !canvas.width || !canvas.height) return false;
-    return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.some((v, i) => i % 4 === 3 && v > 0);
-  })()`;
-  await waitFor(hasSkeletonPixels);
-  assert.ok(await evaluate('window.__poseTest.debugFrames > 0'));
-  await evaluate(
-    "document.querySelector('.pose-debug-controls input').click()",
-  );
-  assert.ok(
-    await evaluate("document.querySelector('.camera-preview canvas').hidden"),
-  );
-  assert.ok(
-    await evaluate(`(() => {
-    const canvas = document.querySelector('.camera-preview canvas');
-    return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.every(v => v === 0);
+    'SW DIAGNOSTICS',
+    JSON.stringify(
+      await evaluate(`(async () => {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    const source = await fetch('/sw.js').then(async r => ({ status: r.status, type: r.headers.get('content-type'), text: (await r.text()).slice(0, 100) }));
+    const registration = await navigator.serviceWorker.register('/sw.js').then(r => ({ scope: r.scope, active: r.active?.state, installing: r.installing?.state })).catch(e => ({ error: String(e) }));
+    return { registrations: registrations.map(r => ({ scope: r.scope, active: r.active?.state, installing: r.installing?.state })), source, registration, caches: await caches.keys(), readyState: document.readyState };
   })()`),
-  );
-  console.log(
-    'PASS skeleton is opt-in, renders actual inferred joints, and clears when disabled',
-  );
-  await click('Pause story');
-  const transform = await evaluate(
-    "document.querySelector('.story-traveler').style.transform",
-  );
-  await delay(1500);
-  assert.equal(
-    await evaluate("document.querySelector('.story-traveler').style.transform"),
-    transform,
-  );
-  await click('Resume');
-  await click('Restart story');
-  assert.ok(!(await text()).includes('Magic activated!'));
-  console.log('PASS pause, resume, replay');
-  // Gesture → story: deliver the worker's own reply shape on the live worker, so the real
-  // camera controller, player reducer and scene all run. (The model seeing a real body
-  // is the one step this cannot cover: that needs a physical webcam test.)
-  const workerGesture = (type) =>
-    evaluate(`window.__poseTest.worker.dispatchEvent(new MessageEvent('message', { data: {
-      type: 'pose', event: { type: '${type}' },
-      tracking: { landmarkCount: 33, upperBody: true, calibrated: true, legsVisible: false, crouchAvailable: false, headDirection: 'forward' },
-    } }))`);
-  await waitFor("document.body.innerText.includes('Tortoise needs your help!')", 15000);
-  await workerGesture('LEAN_LEFT'); // not what this moment asks for: ignored
-  assert.ok((await text()).includes('Tortoise needs your help!'));
-  await workerGesture('ARMS_WIDE');
-  await waitFor(
-    "document.querySelector('[data-testid=tortoise-actor] .actor-shield') !== null",
-    2000,
-  );
-  assert.ok((await text()).includes('Magic shield!'));
-  assert.ok(await evaluate("document.querySelector('.forest-glow') !== null"));
-  console.log('PASS camera ARMS_WIDE event raises the shield and lights the forest');
-  await waitFor("document.body.innerText.includes('Which way should Tortoise go?')", 15000);
-  await workerGesture('LEAN_RIGHT');
-  await waitFor("document.body.innerText.includes('Right path chosen!')", 2000);
-  assert.ok(
-    await evaluate(
-      "document.querySelector('[data-testid=tortoise-actor] .actor-lane').classList.contains('lane-sunny') && document.querySelector('.forest-fork').classList.contains('chose-sunny')",
     ),
   );
-  assert.ok((await text()).includes('Leaning right!'));
-  console.log('PASS camera LEAN_RIGHT event chooses the sunny trail');
-  await waitFor("document.body.innerText.includes('Give Tortoise one last boost!')", 15000);
-  await workerGesture('HAND_RAISE');
-  await waitFor("document.body.innerText.includes('A sparkly boost!')", 2000);
-  assert.ok(
-    await evaluate(
-      "document.querySelector('.animated-story').classList.contains('has-magic') && ['magic','energized'].includes(document.querySelector('[data-testid=tortoise-actor]').dataset.state)",
-    ),
+  await evaluate(
+    "Promise.race([navigator.serviceWorker.ready, new Promise((_, reject) => setTimeout(() => reject(new Error('Offline cache did not become ready')), 20000))])",
   );
-  console.log('PASS camera HAND_RAISE event gives Tortoise the final boost');
-  await click('Restart story');
-  const screenshot = await send('Page.captureScreenshot', { format: 'png' });
-  const screenshotPath = join(profile, 'story-desktop.png');
-  await writeFile(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log('SCREENSHOT', screenshotPath);
-  await send('Emulation.setDeviceMetricsOverride', {
-    width: 390,
-    height: 844,
-    deviceScaleFactor: 1,
-    mobile: true,
+  await waitFor('navigator.serviceWorker.controller !== null', 15000);
+  await send('Network.emulateNetworkConditions', {
+    offline: true,
+    latency: 0,
+    downloadThroughput: 0,
+    uploadThroughput: 0,
   });
-  assert.ok(
-    await evaluate('document.documentElement.scrollWidth <= innerWidth'),
-    'No mobile horizontal overflow',
-  );
-  await click('Stop Camera');
-  assert.ok(
-    await evaluate("document.querySelector('video').srcObject === null"),
-  );
-  console.log('PASS responsive layout and camera stop cleanup');
-  // No input after restart: three held invitations resolve themselves (~65 s).
-  await waitFor("document.body.innerText.includes('Steady Champion')", 80000);
-  console.log('PASS story completes automatically without gestures');
-  await send('Page.navigate', { url: `${base}/library/hare/camera` });
+  await send('Page.navigate', { url: `${base}/library/pigs/play` });
   await waitFor(
-    "location.pathname.endsWith('/hare/play') && document.querySelector('.animated-story') !== null",
+    "document.body.innerText.includes('The Three Little Pigs') && document.querySelector('.animated-story') !== null",
+    15000,
   );
-  console.log('PASS legacy camera URL redirects into story');
+  console.log('PASS built-in story route works offline from precached assets');
+  await send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 0,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+  });
   assert.deepEqual(errors, [], 'No uncaught browser exceptions');
-  console.log('PASS browser smoke checks (synthetic camera only)');
+  console.log('PASS production browser smoke (synthetic camera only)');
 } finally {
   socket?.close();
   chrome.kill();

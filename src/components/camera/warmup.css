@@ -1,0 +1,55 @@
+.galaxy-panel {
+  color: #f8fafc;
+  background: radial-gradient(ellipse at top, #34356c, #111827);
+  border: 2px solid #a5b4fc;
+  border-radius: 24px;
+  padding: 24px;
+}
+.galaxy-panel h1,
+.galaxy-panel h2 {
+  color: #fff;
+}
+.warmup {
+  max-width: 760px;
+  margin: auto;
+  text-align: center;
+}
+.warmup-stage {
+  position: relative;
+  padding: 20px;
+}
+.warmup-stage p {
+  font-size: 24px;
+  font-weight: 700;
+}
+.warmup-guide {
+  width: 180px;
+  height: 220px;
+  border: 3px dashed #a5f3fc;
+  border-radius: 80px;
+  margin: auto;
+  display: grid;
+  place-items: center;
+}
+.warmup-guide .gesture-hint {
+  width: 150px;
+  height: 180px;
+}
+.warmup-stars {
+  font-size: 38px;
+  color: #fde68a;
+  animation: warmup-star 600ms ease-out;
+}
+.warmup .story-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 18px 0;
+}
+@keyframes warmup-star {
+  from {
+    scale: 0.5;
+    opacity: 0.2;
+  }
+}

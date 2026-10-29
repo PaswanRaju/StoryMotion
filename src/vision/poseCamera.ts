@@ -1,5 +1,8 @@
 import type { MagicAction } from './magicGesture';
 import type { BodyGestureEvent, BodyTracking } from './bodyGestures';
+import { GESTURE_CONFIG } from '../gestures/config';
+import type { VisionOptions } from './poseProcessor';
+import type { FixtureFrame } from '../gestures/fixtures';
 import { FALLBACK_MODEL_URL, MODEL_URL, WASM_ROOT } from './poseAssets';
 
 export type TrackingStatus =
@@ -9,6 +12,7 @@ export type TrackingStatus =
   | 'tracking'
   | 'missing'
   | 'denied'
+  | 'unavailable'
   | 'error';
 export type PoseCameraOptions = {
   onAction: (action: MagicAction) => void;
@@ -16,18 +20,27 @@ export type PoseCameraOptions = {
   onGesture?: (event: BodyGestureEvent) => void;
   onTracking?: (tracking: BodyTracking) => void;
   /** Bitmap is valid only during this callback; the controller closes it afterward. */
-  onDebug?: (frame: ImageBitmap | null) => void;
+  onShadow?: (frame: ImageBitmap | HTMLCanvasElement | null) => void;
+  onDebug?: (frame: ImageBitmap | HTMLCanvasElement | null) => void;
+  recognitionEnabled?: boolean;
+  vision?: VisionOptions;
+  /** Development-only local fixture capture; never supplied by the story player. */
+  onFixtureFrame?: (frame: FixtureFrame) => void;
   wasmRoot?: string;
   modelUrl?: string;
 };
 export type PoseWorkerReply =
   | { type: 'ready' }
+  | { type: 'idle' }
   | { type: 'error'; reason?: string }
   | {
       type: 'pose';
       event: BodyGestureEvent | null;
+      events?: BodyGestureEvent[];
       tracking: BodyTracking;
-      debugFrame?: ImageBitmap;
+      debugFrame?: ImageBitmap | HTMLCanvasElement;
+      shadowFrame?: ImageBitmap | HTMLCanvasElement;
+      fixtureFrame?: FixtureFrame;
     };
 
 /** One worker + one in-flight bitmap per camera. start() must follow an explicit click. */
@@ -38,10 +51,18 @@ export function createPoseCamera(
   let generation = 0;
   let active = false;
   let stream: MediaStream | null = null;
-  let worker: Worker | null = null;
+  type WorkerEndpoint = Pick<
+    Worker,
+    'postMessage' | 'terminate' | 'onmessage' | 'onerror'
+  >;
+  let worker: WorkerEndpoint | null = null;
   let frame = 0;
   let watchdog: ReturnType<typeof setTimeout> | undefined;
   let debugEnabled = false;
+  let recognitionEnabled = options.recognitionEnabled ?? true;
+  let recordingEnabled = false;
+  let modelReady = false;
+  let visionOptions = options.vision;
   let lastStatus: TrackingStatus = 'idle';
   const status = (next: TrackingStatus) => {
     if (next !== lastStatus) {
@@ -52,6 +73,8 @@ export function createPoseCamera(
   const stop = () => {
     generation++;
     active = false;
+    modelReady = false;
+    recordingEnabled = false;
     cancelAnimationFrame(frame);
     clearTimeout(watchdog);
     stream?.getTracks().forEach((track) => {
@@ -65,12 +88,27 @@ export function createPoseCamera(
     worker?.terminate();
     worker = null;
     options.onDebug?.(null);
+    options.onShadow?.(null);
     status('idle');
   };
   const setDebug = (enabled: boolean) => {
     debugEnabled = enabled;
     worker?.postMessage({ type: 'debug', enabled });
     if (!enabled) options.onDebug?.(null);
+  };
+  const setRecognitionEnabled = (enabled: boolean) => {
+    recognitionEnabled = enabled;
+    worker?.postMessage({ type: 'recognition', enabled });
+    if (modelReady && !enabled) clearTimeout(watchdog);
+  };
+  const setVisionOptions = (value: VisionOptions) => {
+    visionOptions = value;
+    worker?.postMessage({ type: 'options', options: value });
+  };
+  const setRecordingEnabled = (enabled: boolean) => {
+    if (!import.meta.env.DEV || !options.onFixtureFrame) return;
+    recordingEnabled = enabled;
+    worker?.postMessage({ type: 'recording', enabled });
   };
   const fail = (next: TrackingStatus = 'error') => {
     stop();
@@ -86,10 +124,10 @@ export function createPoseCamera(
     const run = ++generation;
     status('requesting');
     // Permission may be left unanswered. Late-granted streams are still stopped below.
-    armWatchdog(30000);
+    armWatchdog(GESTURE_CONFIG.inference.loadTimeoutMs);
     try {
       if (!navigator.mediaDevices?.getUserMedia)
-        throw new Error('Camera unavailable');
+        throw new DOMException('Camera unavailable', 'NotFoundError');
       const acquired = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -114,11 +152,25 @@ export function createPoseCamera(
       await video.play();
       if (run !== generation) return;
       status('loading');
-      armWatchdog(30000);
-      const detector = new Worker(
-        new URL('./pose.worker.ts', import.meta.url),
-        { type: 'module' },
-      );
+      armWatchdog(GESTURE_CONFIG.inference.loadTimeoutMs);
+      let detector: WorkerEndpoint;
+      try {
+        if (
+          typeof Worker === 'undefined' ||
+          typeof OffscreenCanvas === 'undefined'
+        )
+          throw new Error('Worker canvas unsupported');
+        detector = new Worker(new URL('./pose.worker.ts', import.meta.url), {
+          type: 'module',
+        });
+      } catch {
+        const { createMainThreadPoseWorker } = await import('./mainThreadPose');
+        detector = createMainThreadPoseWorker();
+      }
+      if (run !== generation) {
+        detector.terminate();
+        return;
+      }
       worker = detector;
       let ready = false;
       let busy = false;
@@ -133,7 +185,12 @@ export function createPoseCamera(
       };
       detector.onmessage = ({ data }: MessageEvent<PoseWorkerReply>) => {
         if (run !== generation) {
-          if (data.type === 'pose') data.debugFrame?.close();
+          if (data.type === 'pose') {
+            if (data.debugFrame && 'close' in data.debugFrame)
+              data.debugFrame.close();
+            if (data.shadowFrame && 'close' in data.shadowFrame)
+              data.shadowFrame.close();
+          }
           return;
         }
         if (data.type === 'error') {
@@ -142,26 +199,40 @@ export function createPoseCamera(
           fail();
           return;
         }
-        armWatchdog(10000);
+        clearTimeout(watchdog);
         if (data.type === 'ready') {
           ready = true;
+          modelReady = true;
           status('missing');
           return;
         }
         busy = false;
+        if (data.type === 'idle') return;
         status(data.tracking.upperBody ? 'tracking' : 'missing');
         try {
+          if (recognitionEnabled && data.shadowFrame)
+            options.onShadow?.(data.shadowFrame);
           if (debugEnabled && data.debugFrame)
             options.onDebug?.(data.debugFrame);
         } finally {
-          data.debugFrame?.close();
+          if (data.debugFrame && 'close' in data.debugFrame)
+            data.debugFrame.close();
+          if (data.shadowFrame && 'close' in data.shadowFrame)
+            data.shadowFrame.close();
         }
+        if (import.meta.env.DEV && recordingEnabled && data.fixtureFrame)
+          options.onFixtureFrame?.(data.fixtureFrame);
         options.onTracking?.(data.tracking);
-        if (data.event) {
-          options.onGesture?.(data.event);
-          if (data.event.type === 'HAND_RAISE')
-            options.onAction({ type: 'MAGIC_ACTIVATE' });
-        }
+        if (recognitionEnabled)
+          for (const event of data.events ?? (data.event ? [data.event] : [])) {
+            options.onGesture?.(event);
+            if (event.type === 'HAND_RAISE')
+              options.onAction({
+                type: 'MAGIC_ACTIVATE',
+                ...(event.player ? { player: event.player } : {}),
+                ...(event.hand ? { hand: event.hand } : {}),
+              });
+          }
       };
       detector.postMessage({
         type: 'init',
@@ -169,32 +240,53 @@ export function createPoseCamera(
         modelUrl: options.modelUrl ?? MODEL_URL,
         fallbackModelUrl: options.modelUrl ? undefined : FALLBACK_MODEL_URL,
       });
+      if (visionOptions)
+        detector.postMessage({ type: 'options', options: visionOptions });
+      if (!recognitionEnabled)
+        detector.postMessage({ type: 'recognition', enabled: false });
+      if (import.meta.env.DEV && recordingEnabled)
+        detector.postMessage({ type: 'recording', enabled: true });
+      if (options.onShadow)
+        detector.postMessage({ type: 'shadow', enabled: true });
       if (debugEnabled) detector.postMessage({ type: 'debug', enabled: true });
       const tick = (now: number) => {
         if (run !== generation) return;
         if (
           ready &&
+          recognitionEnabled &&
           !busy &&
           video.readyState >= 2 &&
           video.currentTime !== lastVideoTime &&
-          now - lastInference >= 100
+          now - lastInference >= 1000 / GESTURE_CONFIG.inference.fps
         ) {
           busy = true;
+          armWatchdog(GESTURE_CONFIG.inference.frameTimeoutMs);
           lastInference = now;
           lastVideoTime = video.currentTime;
           // Transfer locally to the worker; never queue frames or send to a server.
-          void createImageBitmap(video)
+          const capture = () => {
+            if (typeof createImageBitmap === 'function')
+              return createImageBitmap(video);
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            canvas.getContext('2d')?.drawImage(video, 0, 0);
+            return Promise.resolve(canvas);
+          };
+          void capture()
             .then((bitmap) => {
-              if (run !== generation) {
-                bitmap.close();
+              if (run !== generation || !recognitionEnabled) {
+                busy = false;
+                if ('close' in bitmap) bitmap.close();
                 return;
               }
               try {
-                detector.postMessage({ type: 'frame', bitmap, at: now }, [
-                  bitmap,
-                ]);
+                detector.postMessage(
+                  { type: 'frame', bitmap, at: now },
+                  'close' in bitmap ? [bitmap] : [],
+                );
               } catch {
-                bitmap.close();
+                if ('close' in bitmap) bitmap.close();
                 fail();
               }
             })
@@ -210,9 +302,18 @@ export function createPoseCamera(
       fail(
         error instanceof DOMException && error.name === 'NotAllowedError'
           ? 'denied'
-          : 'error',
+          : error instanceof DOMException && error.name === 'NotFoundError'
+            ? 'unavailable'
+            : 'error',
       );
     }
   };
-  return { start, stop, setDebug };
+  return {
+    start,
+    stop,
+    setDebug,
+    setRecognitionEnabled,
+    setRecordingEnabled,
+    setVisionOptions,
+  };
 }

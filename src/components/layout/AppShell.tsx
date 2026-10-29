@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ParentSettings } from '../../settings/ParentSettings';
 import { Header } from './Header';
 import { SpaceBackdrop } from './SpaceBackdrop';
 import { useUiSounds } from '../../hooks/useUiSounds';
@@ -13,6 +14,9 @@ export function AppShell({ children }: AppShellProps) {
     <div className="app-shell">
       <SpaceBackdrop />
       <Header />
+      <div className="parent-controls">
+        <ParentSettings />
+      </div>
       <main className="app-shell__main">{children}</main>
     </div>
   );

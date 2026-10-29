@@ -1,4 +1,6 @@
+import { useI18n } from '../../i18n';
 import { Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { IconButton } from '../../ui';
 
 type PlayerToolbarProps = {
   title: string;
@@ -17,6 +19,7 @@ export function PlayerToolbar({
   onPause,
   onRestart,
 }: PlayerToolbarProps) {
+  const { t } = useI18n();
   return (
     <div className="player-toolbar">
       <div className="player-toolbar__title">
@@ -24,37 +27,34 @@ export function PlayerToolbar({
         <p>{chapterLabel}</p>
       </div>
       <div className="player-toolbar__controls">
-        <button
-          type="button"
-          className="btn btn--ghost player-toolbar__btn"
-          onClick={onToggleMute}
+        <IconButton
+          className="player-toolbar__btn"
+          icon={
+            muted ? (
+              <VolumeX size={26} strokeWidth={2.5} />
+            ) : (
+              <Volume2 size={26} strokeWidth={2.5} />
+            )
+          }
+          label={muted ? t('unmuteNarration') : t('muteNarration')}
+          title={muted ? t('soundOff') : t('soundOn')}
           aria-pressed={muted}
-          data-sfx="toggle"
-          aria-label={muted ? 'Unmute narration' : 'Mute narration'}
-        >
-          {muted ? (
-            <VolumeX size={18} aria-hidden="true" />
-          ) : (
-            <Volume2 size={18} aria-hidden="true" />
-          )}
-          {muted ? 'Sound off' : 'Sound on'}
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost player-toolbar__btn"
+          sfx="toggle"
+          onClick={onToggleMute}
+        />
+        <IconButton
+          className="player-toolbar__btn"
+          icon={<RotateCcw size={26} strokeWidth={2.5} />}
+          label={t('restartStory')}
           onClick={onRestart}
-          aria-label="Restart story"
-        >
-          <RotateCcw size={18} aria-hidden="true" /> Replay
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost player-toolbar__btn"
+        />
+        <IconButton
+          className="player-toolbar__btn"
+          variant="secondary"
+          icon={<Pause size={26} strokeWidth={2.5} fill="currentColor" />}
+          label={t('pauseStory')}
           onClick={onPause}
-          aria-label="Pause story"
-        >
-          <Pause size={18} aria-hidden="true" /> Pause
-        </button>
+        />
       </div>
     </div>
   );

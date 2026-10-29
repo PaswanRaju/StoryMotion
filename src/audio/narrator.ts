@@ -28,6 +28,9 @@ export function createNarrator(
   /** Character index of the word being spoken; resume restarts from that word. */
   let offset = 0;
   let enabled = true;
+  let rate = 0.88;
+  let volume = 0.8;
+  let language = 'en-US';
   let paused = false;
   /** Ignores late end/boundary events from utterances that were cancelled. */
   let generation = 0;
@@ -64,8 +67,9 @@ export function createNarrator(
     }
     const mine = generation;
     const utterance = makeUtterance(text);
-    utterance.rate = 0.88;
-    utterance.lang = 'en-US';
+    utterance.rate = rate;
+    utterance.volume = volume;
+    utterance.lang = language;
     utterance.onboundary = (event) => {
       if (mine !== generation) return;
       heardBoundary = true;
@@ -94,7 +98,10 @@ export function createNarrator(
     if (status !== 'speaking' || !line) return;
     if (!heardBoundary) {
       const spoken = Math.floor(
-        ((Date.now() - startedAt) / 1000) * ESTIMATED_CHARS_PER_SECOND,
+        (((Date.now() - startedAt) / 1000) *
+          ESTIMATED_CHARS_PER_SECOND *
+          rate) /
+          0.88,
       );
       const reached = offset + spoken;
       // Back up to the start of the word that was being spoken.
@@ -135,6 +142,20 @@ export function createNarrator(
         status = 'interrupted';
       }
     },
+    setLanguage(value: string) {
+      language = value === 'es' ? 'es-ES' : 'en-US';
+    },
+    setRate(value: number) {
+      if (rate === value) return;
+      const wasSpeaking = status === 'speaking';
+      if (wasSpeaking) interrupt();
+      rate = value;
+      if (wasSpeaking && canSpeak()) speakFrom(offset);
+    },
+    setVolume(value: number) {
+      volume = value;
+      if (current) current.volume = value;
+    },
     setEnabled(value: boolean) {
       enabled = value;
       sync();
@@ -157,8 +178,9 @@ export function createNarrator(
       silence();
       const mine = generation;
       const utterance = makeUtterance(text);
-      utterance.rate = 0.95;
-      utterance.lang = 'en-US';
+      utterance.rate = rate * (0.95 / 0.88);
+      utterance.volume = volume;
+      utterance.lang = language;
       utterance.onend = utterance.onerror = () => {
         if (mine === generation) interjecting = false;
       };
@@ -168,6 +190,22 @@ export function createNarrator(
         synth.speak(utterance);
       } catch {
         interjecting = false;
+      }
+    },
+    /** Queue an invitation after the current line so the plot is never cut off. */
+    instruct(id: string, text: string) {
+      if (interjected.has(id)) return;
+      interjected.add(id);
+      const synth = getSynth();
+      if (!synth || !canSpeak()) return;
+      const utterance = makeUtterance(text);
+      utterance.rate = rate;
+      utterance.volume = volume;
+      utterance.lang = language;
+      try {
+        synth.speak(utterance);
+      } catch {
+        /* Visual prompts remain. */
       }
     },
     /** Intentional replay: the current line from its first word. */
@@ -199,7 +237,25 @@ export function createNarrator(
     stop,
     /** For tests and debugging. */
     get state() {
-      return { lineId: line?.id ?? null, status, offset, holding: current };
+      return {
+        lineId: line?.id ?? null,
+        status,
+        offset,
+        holding: current,
+        charIndex:
+          status === 'speaking' && !heardBoundary
+            ? Math.min(
+                line?.text.length ?? 0,
+                offset +
+                  Math.floor(
+                    (((Date.now() - startedAt) / 1000) *
+                      ESTIMATED_CHARS_PER_SECOND *
+                      rate) /
+                      0.88,
+                  ),
+              )
+            : offset,
+      };
     },
   };
 }

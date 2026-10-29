@@ -1,6 +1,12 @@
+import { GESTURE_CONFIG } from '../gestures/config';
+
 /** Pure state machine; only timing/phase is retained, never landmarks. */
 export type PosePoint = { x: number; y: number; visibility?: number };
-export type MagicAction = { type: 'MAGIC_ACTIVATE' };
+export type MagicAction = {
+  type: 'MAGIC_ACTIVATE';
+  player?: 1 | 2;
+  hand?: 'left' | 'right' | 'both';
+};
 export type HandPose = 'raised' | 'lowered' | 'unknown' | 'neutral';
 export type GestureState = {
   armed: boolean;
@@ -9,12 +15,7 @@ export type GestureState = {
   lastSample: number | null;
   cooldownUntil: number;
 };
-export const GESTURE_TIMING = {
-  stableMs: 400,
-  lowerMs: 250,
-  cooldownMs: 1000,
-  maxGapMs: 250,
-};
+export const GESTURE_TIMING = GESTURE_CONFIG.legacyHand;
 export const initialGestureState = (): GestureState => ({
   armed: true,
   raisedSince: null,
@@ -27,11 +28,18 @@ export function classifyHands(points: readonly PosePoint[] = []): HandPose {
   // Scale the margin to shoulder width when both shoulders are visible. A fixed
   // image-space margin is disproportionately difficult when a child is farther away.
   const shoulders = [points[11], points[12]];
-  const width = shoulders.every((p) => p && (p.visibility ?? 0) >= 0.6)
+  const width = shoulders.every(
+    (p) => p && (p.visibility ?? 0) >= GESTURE_CONFIG.visibility,
+  )
     ? Math.abs(shoulders[0].x - shoulders[1].x)
     : 0;
   const raiseMargin =
-    width > 0.03 ? Math.max(0.02, Math.min(0.07, width * 0.25)) : 0.04;
+    width > GESTURE_TIMING.minWidth
+      ? Math.max(
+          GESTURE_TIMING.minMargin,
+          Math.min(GESTURE_TIMING.maxMargin, width * GESTURE_TIMING.widthRatio),
+        )
+      : GESTURE_TIMING.fallbackMargin;
   const lowerMargin = raiseMargin / 2;
   const side = (shoulderIndex: number, wristIndex: number): HandPose => {
     const shoulder = points[shoulderIndex];
@@ -46,7 +54,7 @@ export function classifyHands(points: readonly PosePoint[] = []): HandPose {
           p.x <= 1 &&
           p.y >= 0 &&
           p.y <= 1 &&
-          (p.visibility ?? 0) >= 0.6,
+          (p.visibility ?? 0) >= GESTURE_CONFIG.visibility,
       )
     )
       return 'unknown';

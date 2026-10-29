@@ -29,7 +29,11 @@ it('offers each optional window in turn, accepts its button, and continues witho
   expect(screen.getByText('✨ You did it!')).toBeInTheDocument();
   act(() => vi.advanceTimersByTime(BOOST.startMs - PATH.startMs + 100));
   fireEvent.click(screen.getByRole('button', { name: 'Give Boost' }));
-  act(() => vi.advanceTimersByTime(STORY_DURATION_MS - BOOST.startMs + 1000));
+  act(() =>
+    vi.advanceTimersByTime(
+      STORY_DURATION_MS - BOOST.startMs + MOMENTS[3].windowMs + 1000,
+    ),
+  );
   expect(
     screen.getByText(/story continued automatically/i),
   ).toBeInTheDocument();
@@ -37,8 +41,11 @@ it('offers each optional window in turn, accepts its button, and continues witho
     screen.getByRole('button', { name: 'Replay optional scene' }),
   );
   // No input at all: every window resolves itself and the story still ends.
-  act(() => vi.advanceTimersByTime(
-      STORY_DURATION_MS + MOMENTS.reduce((sum, m) => sum + m.windowMs, 0) + 1000,
+  act(() =>
+    vi.advanceTimersByTime(
+      STORY_DURATION_MS +
+        MOMENTS.reduce((sum, m) => sum + m.windowMs, 0) +
+        1000,
     ),
   );
   expect(
